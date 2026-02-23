@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -31,7 +33,7 @@ export default function LoginPage() {
             }
 
             //Spara token
-            localStorage.setItem("token", data.token);
+            login(data.token);
 
             //Navigera till startsidan
             navigate("/");
