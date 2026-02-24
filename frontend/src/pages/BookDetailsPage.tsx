@@ -25,10 +25,20 @@ type Review = {
   id: string;
   text: string;
   rating: number;
+  createdAt: string;
   user?: {
     email: string;
     id: string;
   };
+};
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("sv-SE", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 };
 
 /* =========================
@@ -261,6 +271,10 @@ return (
           }}
         >
           <strong>{review.user?.email}</strong>
+
+          <p style={{ fontSize: "0.8rem", color: "#666" }}>
+  {formatDate(review.createdAt)}
+</p>
 
           {editingId === review.id ? (
             <>
