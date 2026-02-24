@@ -38,6 +38,7 @@ router.get("/:bookId", async (req, res) => {
             user: {
                 select: {
                     email: true,
+                    id: true,
                 },
             },
         },

@@ -7,17 +7,17 @@ import { useAuth } from "../context/AuthContext";
 ========================= */
 
 type GoogleBookDetails = {
-    id: string;
-    volumeInfo: {
-        title: string;
-        authors?: string[];
-        description?: string;
-        imageLinks?: {
-            thumbnail?: string;
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    description?: string;
+    imageLinks?: {
+      thumbnail?: string;
     };
     publishedDate?: string;
     publisher?: string;
-};
+  };
 };
 
 type Review = {
@@ -26,65 +26,81 @@ type Review = {
   rating: number;
   user?: {
     email: string;
+    id: string;
   };
 };
 
 /* =========================
-   KOMPONENT
+   JWT HJÄLP
 ========================= */
+
+const getUserIdFromToken = (token: string) => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.userId;
+  } catch {
+    return null;
+  }
+};
 
 export default function BookDetailsPage() {
-    const { id } = useParams<{ id: string }>();
-    const { token, isAuthenticated } = useAuth();
+  const { id } = useParams<{ id: string }>();
+  const { token, isAuthenticated } = useAuth();
 
-    const [book, setBook] = useState<GoogleBookDetails | null>(null);
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [newReview, setNewReview] = useState("");
-    const [rating, setRating] = useState(5);
+  const currentUserId = token ? getUserIdFromToken(token) : null;
 
-    const [loadingBook, setLoadingBook] = useState(false);
-    const [loadingReviews, setLoadingReviews] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const [book, setBook] = useState<GoogleBookDetails | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [newReview, setNewReview] = useState("");
+  const [rating, setRating] = useState(5);
 
-/* =========================
-   HÄMTA BOK
-========================= */
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editRating, setEditRating] = useState(5);
 
-    useEffect(() => {
-        const fetchBook = async () => {
-            if (!id) return;
+  const [loadingBook, setLoadingBook] = useState(false);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-            setLoadingBook(true);
-            setError(null);
+  /* =========================
+     HÄMTA BOK
+  ========================= */
 
-            try {
-                const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
+  useEffect(() => {
+    const fetchBook = async () => {
+      if (!id) return;
 
-                const response = await fetch(
+      setLoadingBook(true);
+      setError(null);
+
+      try {
+        const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
+
+        const response = await fetch(
           `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
         );
 
-                if(!response.ok) {
-                    throw new Error("Kunde inte hämta bokdetaljer.");
-                }
+        if (!response.ok) {
+          throw new Error("Kunde inte hämta bokdetaljer.");
+        }
 
-                const data = await response.json();
-                setBook(data);
-            } catch (err) {
-                setError("Ett fel uppstod vid hämtning av bok.");
-            } finally {
-                setLoadingBook(false);
-            }
-        };
+        const data = await response.json();
+        setBook(data);
+      } catch {
+        setError("Ett fel uppstod vid hämtning av bok.");
+      } finally {
+        setLoadingBook(false);
+      }
+    };
 
-        fetchBook();
-    }, [id]);
+    fetchBook();
+  }, [id]);
 
   /* =========================
      HÄMTA RECENSIONER
   ========================= */
 
-    const fetchReviews = async () => {
+  const fetchReviews = async () => {
     if (!id) return;
 
     setLoadingReviews(true);
@@ -93,7 +109,6 @@ export default function BookDetailsPage() {
       const response = await fetch(
         `http://localhost:3000/reviews/${id}`
       );
-
       const data = await response.json();
       setReviews(data);
     } catch {
@@ -107,11 +122,11 @@ export default function BookDetailsPage() {
     fetchReviews();
   }, [id]);
 
-/* =========================
+  /* =========================
      SKAPA RECENSION
   ========================= */
 
-const handleCreateReview = async () => {
+  const handleCreateReview = async () => {
     if (!token || !id || !newReview.trim()) return;
 
     try {
@@ -125,7 +140,7 @@ const handleCreateReview = async () => {
           },
           body: JSON.stringify({
             bookId: id,
-            text: newReview,
+            text: newReview.trim(),
             rating,
           }),
         }
@@ -139,23 +154,81 @@ const handleCreateReview = async () => {
       setRating(5);
       fetchReviews();
     } catch (error) {
-      console.error(error);
+      console.error("Fel vid skapande:", error);
     }
   };
 
-/* =========================
-    RENDER LOGIK
-========================= */
+  /* =========================
+     UPPDATERA RECENSION
+  ========================= */
 
- if (loadingBook) return <p>Laddar bok...</p>;
+  const handleUpdateReview = async (reviewId: string) => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/reviews/${reviewId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            text: editText,
+            rating: editRating,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Kunde inte uppdatera recension.");
+      }
+
+      setEditingId(null);
+      fetchReviews();
+    } catch (error) {
+      console.error("Fel vid uppdatering:", error);
+    }
+  };
+
+  /* =========================
+     TA BORT RECENSION
+  ========================= */
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/reviews/${reviewId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Kunde inte ta bort recension.");
+      }
+
+      fetchReviews();
+    } catch (error) {
+      console.error("Fel vid borttagning:", error);
+    }
+  };
+
+  /* =========================
+     RENDER
+  ========================= */
+
+  if (loadingBook) return <p>Laddar bok...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!book) return <p>Ingen bok hittades.</p>;
 
-  /* =========================
-     JSX
-  ========================= */
-
-    return (
+  return (
     <div style={{ padding: "2rem" }}>
       <h1>{book.volumeInfo.title}</h1>
 
@@ -166,67 +239,92 @@ const handleCreateReview = async () => {
         </p>
       )}
 
-      {book.volumeInfo.publishedDate && (
-        <p>
-          <strong>Publicerad:</strong>{" "}
-          {book.volumeInfo.publishedDate}
-        </p>
-      )}
-
-      {book.volumeInfo.publisher && (
-        <p>
-          <strong>Förlag:</strong>{" "}
-          {book.volumeInfo.publisher}
-        </p>
-      )}
-
-      {book.volumeInfo.imageLinks?.thumbnail && (
-        <img
-          src={book.volumeInfo.imageLinks.thumbnail}
-          alt={book.volumeInfo.title}
-          style={{ marginTop: "1rem" }}
-        />
-      )}
-
-      {book.volumeInfo.description && (
-        <div style={{ marginTop: "1rem" }}>
-          <h3>Beskrivning</h3>
-          <p>{book.volumeInfo.description}</p>
-        </div>
-      )}
-
-       {/* =========================
-           RECENSIONER
-      ========================= */}
-
       <hr style={{ margin: "2rem 0" }} />
 
       <h2>Recensioner</h2>
 
       {loadingReviews && <p>Laddar recensioner...</p>}
+      {reviews.length === 0 && <p>Inga recensioner ännu.</p>}
 
-      {reviews.length === 0 && (
-        <p>Inga recensioner ännu.</p>
-      )}
+      {reviews.map((review) => {
+        const isOwner = review.user?.id === currentUserId;
 
-      {reviews.map((review) => (
-        <div
-          key={review.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "1rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <strong>{review.user?.email}</strong>
-          <p>Betyg: {review.rating} ⭐</p>
-          <p>{review.text}</p>
-        </div>
-      ))}
+        return (
+          <div
+            key={review.id}
+            style={{
+              border: "1px solid #ccc",
+              padding: "1rem",
+              marginBottom: "1rem",
+            }}
+          >
+            <strong>{review.user?.email}</strong>
 
-      {/* =========================
-           SKRIV RECENSION
-      ========================= */}
+            {editingId === review.id ? (
+              <>
+                <textarea
+                  value={editText}
+                  onChange={(e) =>
+                    setEditText(e.target.value)
+                  }
+                />
+                <select
+                  value={editRating}
+                  onChange={(e) =>
+                    setEditRating(Number(e.target.value))
+                  }
+                >
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={() =>
+                    handleUpdateReview(review.id)
+                  }
+                >
+                  Spara
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                >
+                  Avbryt
+                </button>
+              </>
+            ) : (
+              <>
+                <p>Betyg: {review.rating} ⭐</p>
+                <p>{review.text}</p>
+
+                {isOwner && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditingId(review.id);
+                        setEditText(review.text);
+                        setEditRating(review.rating);
+                      }}
+                    >
+                      Redigera
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        handleDeleteReview(review.id)
+                      }
+                    >
+                      Ta bort
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        );
+      })}
 
       {isAuthenticated && (
         <div style={{ marginTop: "2rem" }}>
@@ -237,38 +335,26 @@ const handleCreateReview = async () => {
             onChange={(e) =>
               setNewReview(e.target.value)
             }
-            rows={4}
-            style={{
-              width: "100%",
-              marginBottom: "1rem",
-            }}
           />
 
-          <div>
-            <label>Betyg: </label>
-            <select
-              value={rating}
-              onChange={(e) =>
-                setRating(Number(e.target.value))
-              }
-            >
-              {[1, 2, 3, 4, 5].map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            onClick={handleCreateReview}
-            style={{ marginTop: "1rem" }}
+          <select
+            value={rating}
+            onChange={(e) =>
+              setRating(Number(e.target.value))
+            }
           >
+            {[1, 2, 3, 4, 5].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
+          </select>
+
+          <button onClick={handleCreateReview}>
             Skicka recension
           </button>
         </div>
       )}
     </div>
   );
-} 
-   
+}
