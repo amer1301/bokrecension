@@ -1,0 +1,69 @@
+import { Router } from "express";
+import { prisma } from "../prisma";
+import { authenticate, AuthRequest } from "../middleware/authMiddleware";
+
+const router = Router();
+
+/* =========================
+   HÄMTA STATUS FÖR BOK
+========================= */
+router.get("/:bookId", authenticate, async (req: AuthRequest, res) => {
+    const bookId = req.params.bookId as string;
+
+    const status = await prisma.readingStatus.findUnique({
+        where: {
+            bookId_userId: {
+                bookId,
+                userId: req.userId!,
+            },
+        },
+    });
+
+    res.json(status);
+});
+
+/* =========================
+   SKAPA / UPPDATERA STATUS
+========================= */
+router.post("/", authenticate, async (req: AuthRequest, res) => {
+    const { bookId, status, format } = req.body;
+
+    const result = await prisma.readingStatus.upsert({
+        where: {
+  bookId_userId: {
+                bookId,
+                userId: req.userId!,
+            },
+        },
+        update: {
+            status,
+            format,
+        },
+        create: {
+            bookId,
+            status,
+            format,
+            userId: req.userId!,
+        },
+    });
+
+    res.json(result);
+});
+
+/* =========================
+   HÄMTA ALLA STATUS FÖR USER
+========================= */
+router.get("/", authenticate, async (req: AuthRequest, res) => {
+  const statuses = await prisma.readingStatus.findMany({
+    where: {
+      userId: req.userId!,
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+
+  res.json(statuses);
+});
+
+export default router;

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth";
 import reviewRoutes from "./routes/reviews";
+import readingStatusRoutes from "./routes/readingStatus";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/reviews", reviewRoutes);
+app.use("/reading-status", readingStatusRoutes);
 
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");

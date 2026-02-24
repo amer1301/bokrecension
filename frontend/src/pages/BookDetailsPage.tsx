@@ -73,6 +73,9 @@ export default function BookDetailsPage() {
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [readingStatus, setReadingStatus] = useState<string | null>(null);
+  const [loadingStatus, setLoadingStatus] = useState(false);
+
   /* =========================
      HÄMTA BOK
   ========================= */
@@ -132,6 +135,39 @@ export default function BookDetailsPage() {
   useEffect(() => {
     fetchReviews();
   }, [id]);
+
+  useEffect(() => {
+  const fetchReadingStatus = async () => {
+    if (!token || !id) return;
+
+    setLoadingStatus(true);
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/reading-status/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+
+      if (data) {
+        setReadingStatus(data.status);
+      }
+    } catch (error) {
+      console.error("Kunde inte hämta lässtatus");
+    } finally {
+      setLoadingStatus(false);
+    }
+  };
+
+  fetchReadingStatus();
+}, [id, token]);
 
   /* =========================
      SKAPA RECENSION
@@ -231,6 +267,35 @@ export default function BookDetailsPage() {
     }
   };
 
+  const handleStatusChange = async (newStatus: string) => {
+  if (!token || !id || !newStatus) return;
+
+  try {
+    const response = await fetch(
+      "http://localhost:3000/reading-status",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          bookId: id,
+          status: newStatus,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Kunde inte uppdatera status");
+    }
+
+    setReadingStatus(newStatus);
+  } catch (error) {
+    console.error("Fel vid uppdatering av status:", error);
+  }
+};
+
   /* =========================
      RENDER
   ========================= */
@@ -251,6 +316,28 @@ return (
     )}
 
     <hr style={{ margin: "2rem 0" }} />
+
+    {isAuthenticated && (
+  <div style={{ marginTop: "1.5rem" }}>
+    <h3>Min lässtatus</h3>
+
+    {loadingStatus ? (
+      <p>Laddar status...</p>
+    ) : (
+      <select
+        value={readingStatus ?? ""}
+        onChange={(e) =>
+          handleStatusChange(e.target.value)
+        }
+      >
+        <option value="">Välj status</option>
+        <option value="want_to_read">Vill läsa</option>
+        <option value="reading">Läser</option>
+        <option value="finished">Klar</option>
+      </select>
+    )}
+  </div>
+)}
 
     <h2>Recensioner</h2>
 
