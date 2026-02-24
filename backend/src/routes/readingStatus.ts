@@ -26,7 +26,7 @@ router.get("/:bookId", authenticate, async (req: AuthRequest, res) => {
    SKAPA / UPPDATERA STATUS
 ========================= */
 router.post("/", authenticate, async (req: AuthRequest, res) => {
-    const { bookId, status, format } = req.body;
+    const { bookId, status, format, pagesRead } = req.body;
 
     const result = await prisma.readingStatus.upsert({
         where: {
@@ -38,11 +38,13 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
         update: {
             status,
             format,
+            pagesRead,
         },
         create: {
             bookId,
             status,
             format,
+            pagesRead,
             userId: req.userId!,
         },
     });

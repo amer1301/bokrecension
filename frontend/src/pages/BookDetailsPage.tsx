@@ -18,6 +18,7 @@ type GoogleBookDetails = {
     };
     publishedDate?: string;
     publisher?: string;
+    pageCount?: number;
   };
 };
 
@@ -32,13 +33,18 @@ type Review = {
   };
 };
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("sv-SE", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+const formatRelativeTime = (dateString: string) => {
+  const diff = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diff / 60000);
+
+  if (minutes < 1) return "Just nu";
+  if (minutes < 60) return `${minutes} min sedan`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} h sedan`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} dagar sedan`;
 };
 
 /* =========================
@@ -75,6 +81,8 @@ export default function BookDetailsPage() {
 
   const [readingStatus, setReadingStatus] = useState<string | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
+
+  const [pagesRead, setPagesRead] = useState<number>(0);
 
   /* =========================
      HÄMTA BOK
@@ -158,6 +166,7 @@ export default function BookDetailsPage() {
 
       if (data) {
         setReadingStatus(data.status);
+        setPagesRead(data.pagesRead ?? 0);
       }
     } catch (error) {
       console.error("Kunde inte hämta lässtatus");
@@ -282,6 +291,7 @@ export default function BookDetailsPage() {
         body: JSON.stringify({
           bookId: id,
           status: newStatus,
+          pagesRead,
         }),
       }
     );
@@ -296,11 +306,11 @@ export default function BookDetailsPage() {
   }
 };
 
-  /* =========================
-     RENDER
-  ========================= */
+/* =========================
+   RENDER
+========================= */
 
-  if (loadingBook) return <p>Laddar bok...</p>;
+if (loadingBook) return <p>Laddar bok...</p>;
 if (error) return <p style={{ color: "red" }}>{error}</p>;
 if (!book) return <p>Ingen bok hittades.</p>;
 
@@ -317,27 +327,84 @@ return (
 
     <hr style={{ margin: "2rem 0" }} />
 
-    {isAuthenticated && (
-  <div style={{ marginTop: "1.5rem" }}>
-    <h3>Min lässtatus</h3>
+    {/* =========================
+       LÄSSTATUS
+    ========================= */}
 
-    {loadingStatus ? (
-      <p>Laddar status...</p>
-    ) : (
-      <select
-        value={readingStatus ?? ""}
-        onChange={(e) =>
-          handleStatusChange(e.target.value)
-        }
-      >
-        <option value="">Välj status</option>
-        <option value="want_to_read">Vill läsa</option>
-        <option value="reading">Läser</option>
-        <option value="finished">Klar</option>
-      </select>
+    {isAuthenticated && (
+      <div style={{ marginBottom: "2rem" }}>
+        <h3>Min lässtatus</h3>
+
+        {loadingStatus ? (
+          <p>Laddar status...</p>
+        ) : (
+          <>
+            <select
+              value={readingStatus ?? ""}
+              onChange={(e) =>
+                handleStatusChange(e.target.value)
+              }
+            >
+              <option value="">Välj status</option>
+              <option value="want_to_read">Vill läsa</option>
+              <option value="reading">Läser</option>
+              <option value="finished">Klar</option>
+            </select>
+
+            {/* PagesRead visas bara när man läser */}
+            {readingStatus === "reading" && (
+              <div style={{ marginTop: "1rem" }}>
+                <label>Sidor lästa: </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={pagesRead}
+                  onChange={(e) =>
+                    setPagesRead(Number(e.target.value))
+                  }
+                  style={{ marginLeft: "0.5rem" }}
+                />
+
+                {/* Progress bar */}
+                {book.volumeInfo.pageCount &&
+                  pagesRead > 0 && (
+                    <div style={{ marginTop: "1rem" }}>
+                      <div
+                        style={{
+                          height: "10px",
+                          background: "#eee",
+                          borderRadius: "5px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${
+                              (pagesRead /
+                                book.volumeInfo.pageCount) *
+                              100
+                            }%`,
+                            background: "#4caf50",
+                          }}
+                        />
+                      </div>
+                      <small>
+                        {pagesRead} /{" "}
+                        {book.volumeInfo.pageCount} sidor
+                      </small>
+                    </div>
+                  )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     )}
-  </div>
-)}
+
+    {/* =========================
+       RECENSIONER
+    ========================= */}
 
     <h2>Recensioner</h2>
 
@@ -346,22 +413,32 @@ return (
     {loadingReviews && <p>Laddar recensioner...</p>}
 
     {reviews.map((review) => {
-      const isOwner = review.user?.id === currentUserId;
+      const isOwner =
+        review.user?.id === currentUserId;
 
       return (
         <div
           key={review.id}
           style={{
-            border: "1px solid #ccc",
+            border: "1px solid #ddd",
             padding: "1rem",
             marginBottom: "1rem",
+            borderRadius: "10px",
           }}
         >
           <strong>{review.user?.email}</strong>
 
-          <p style={{ fontSize: "0.8rem", color: "#666" }}>
-  {formatDate(review.createdAt)}
-</p>
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "#666",
+              marginTop: "0.3rem",
+            }}
+          >
+            {formatRelativeTime(
+              review.createdAt
+            )}
+          </p>
 
           {editingId === review.id ? (
             <>
@@ -370,12 +447,16 @@ return (
                 onChange={(e) =>
                   setEditText(e.target.value)
                 }
+                rows={3}
+                style={{ width: "100%" }}
               />
 
               <select
                 value={editRating}
                 onChange={(e) =>
-                  setEditRating(Number(e.target.value))
+                  setEditRating(
+                    Number(e.target.value)
+                  )
                 }
               >
                 {[1, 2, 3, 4, 5].map((num) => (
@@ -385,32 +466,49 @@ return (
                 ))}
               </select>
 
-              <button
-                onClick={() =>
-                  handleUpdateReview(review.id)
-                }
-              >
-                Spara
-              </button>
+              <div style={{ marginTop: "0.5rem" }}>
+                <button
+                  onClick={() =>
+                    handleUpdateReview(
+                      review.id
+                    )
+                  }
+                >
+                  Spara
+                </button>
 
-              <button
-                onClick={() => setEditingId(null)}
-              >
-                Avbryt
-              </button>
+                <button
+                  onClick={() =>
+                    setEditingId(null)
+                  }
+                  style={{
+                    marginLeft: "0.5rem",
+                  }}
+                >
+                  Avbryt
+                </button>
+              </div>
             </>
           ) : (
             <>
-              <p>Betyg: {review.rating} ⭐</p>
+              <p>
+                Betyg: {review.rating} ⭐
+              </p>
               <p>{review.text}</p>
 
               {isOwner && (
-                <>
+                <div>
                   <button
                     onClick={() => {
-                      setEditingId(review.id);
-                      setEditText(review.text);
-                      setEditRating(review.rating);
+                      setEditingId(
+                        review.id
+                      );
+                      setEditText(
+                        review.text
+                      );
+                      setEditRating(
+                        review.rating
+                      );
                     }}
                   >
                     Redigera
@@ -418,18 +516,27 @@ return (
 
                   <button
                     onClick={() =>
-                      handleDeleteReview(review.id)
+                      handleDeleteReview(
+                        review.id
+                      )
                     }
+                    style={{
+                      marginLeft: "0.5rem",
+                    }}
                   >
                     Ta bort
                   </button>
-                </>
+                </div>
               )}
             </>
           )}
         </div>
       );
     })}
+
+    {/* =========================
+       SKRIV RECENSION
+    ========================= */}
 
     {isAuthenticated && (
       <div style={{ marginTop: "2rem" }}>
@@ -440,12 +547,16 @@ return (
           onChange={(e) =>
             setNewReview(e.target.value)
           }
+          rows={4}
+          style={{ width: "100%" }}
         />
 
         <select
           value={rating}
           onChange={(e) =>
-            setRating(Number(e.target.value))
+            setRating(
+              Number(e.target.value)
+            )
           }
         >
           {[1, 2, 3, 4, 5].map((num) => (
@@ -455,7 +566,10 @@ return (
           ))}
         </select>
 
-        <button onClick={handleCreateReview}>
+        <button
+          onClick={handleCreateReview}
+          style={{ marginTop: "1rem" }}
+        >
           Skicka recension
         </button>
       </div>

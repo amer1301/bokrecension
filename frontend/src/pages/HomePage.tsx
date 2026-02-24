@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 import BookList from "../components/BookList";
 
 /* =========================
@@ -18,6 +19,15 @@ type ReadingStatus = {
   id: string;
   bookId: string;
   status: string;
+  updatedAt: string;
+};
+
+type MyBook = {
+  id: string;
+  title: string;
+  thumbnail?: string;
+  status: string;
+  updatedAt: string;
 };
 
 /* =========================
@@ -31,6 +41,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   const [myStatuses, setMyStatuses] = useState<ReadingStatus[]>([]);
+  const [myBooks, setMyBooks] = useState<MyBook[]>([]);
 
   const { token, isAuthenticated } = useAuth();
 
@@ -63,6 +74,48 @@ export default function HomePage() {
 
     fetchMyStatuses();
   }, [token]);
+
+  /* =========================
+     HÄMTA BOKDETALJER
+  ========================= */
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      if (myStatuses.length === 0) return;
+
+      const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
+
+      const booksWithDetails = await Promise.all(
+        myStatuses.map(async (status) => {
+          try {
+            const response = await fetch(
+              `https://www.googleapis.com/books/v1/volumes/${status.bookId}?key=${apiKey}`
+            );
+
+            if (!response.ok) return null;
+
+            const data = await response.json();
+
+            return {
+  id: status.bookId,
+  title: data.volumeInfo.title,
+  thumbnail: data.volumeInfo.imageLinks?.thumbnail,
+  status: status.status,
+  updatedAt: status.updatedAt,
+};
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      setMyBooks(
+        booksWithDetails.filter(Boolean) as MyBook[]
+      );
+    };
+
+    fetchBooks();
+  }, [myStatuses]);
 
   /* =========================
      SÖK BÖCKER
@@ -107,34 +160,53 @@ export default function HomePage() {
     <div style={{ padding: "2rem" }}>
       <h1>Bokrecensioner</h1>
 
+{isAuthenticated && (
+  <>
+    <h2>📚 Mitt bibliotek</h2>
+    <p style={{ color: "#666" }}>
+      Dina senast uppdaterade böcker
+    </p>
+  </>
+)}
+
       {/* =========================
          MINA BÖCKER
       ========================= */}
 
-      {isAuthenticated && myStatuses.length > 0 && (
+{isAuthenticated && myBooks.length > 0 && (
         <div style={{ marginBottom: "2rem" }}>
           <h2>Mina böcker</h2>
 
-          {/* Läser */}
-          {myStatuses
-            .filter((s) => s.status === "reading")
-            .map((s) => (
-              <p key={s.id}>📖 Läser: {s.bookId}</p>
-            ))}
+          {myBooks.map((book) => (
+            <div
+              key={book.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "1rem",
+              }}
+            >
+              {book.thumbnail && (
+                <img
+                  src={book.thumbnail}
+                  alt={book.title}
+                  style={{
+                    width: "50px",
+                    marginRight: "1rem",
+                  }}
+                />
+              )}
 
-          {/* Klar */}
-          {myStatuses
-            .filter((s) => s.status === "finished")
-            .map((s) => (
-              <p key={s.id}>✅ Klar: {s.bookId}</p>
-            ))}
-
-          {/* Vill läsa */}
-          {myStatuses
-            .filter((s) => s.status === "want_to_read")
-            .map((s) => (
-              <p key={s.id}>📚 Vill läsa: {s.bookId}</p>
-            ))}
+              <div>
+                <Link to={`/book/${book.id}`}>
+                  <strong>{book.title}</strong>
+                </Link>
+                <p style={{ margin: 0 }}>
+                  Status: {book.status}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -159,7 +231,9 @@ export default function HomePage() {
       </div>
 
       {loading && <p>Laddar...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && (
+        <p style={{ color: "red" }}>{error}</p>
+      )}
 
       <BookList books={books} />
     </div>
