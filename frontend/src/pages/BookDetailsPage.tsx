@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import RatingSummary from "../components/RatingSummary";
 
 /* =========================
    TYPER
@@ -225,136 +226,139 @@ export default function BookDetailsPage() {
   ========================= */
 
   if (loadingBook) return <p>Laddar bok...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (!book) return <p>Ingen bok hittades.</p>;
+if (error) return <p style={{ color: "red" }}>{error}</p>;
+if (!book) return <p>Ingen bok hittades.</p>;
 
-  return (
-    <div style={{ padding: "2rem" }}>
-      <h1>{book.volumeInfo.title}</h1>
+return (
+  <div style={{ padding: "2rem" }}>
+    <h1>{book.volumeInfo.title}</h1>
 
-      {book.volumeInfo.authors && (
-        <p>
-          <strong>Författare:</strong>{" "}
-          {book.volumeInfo.authors.join(", ")}
-        </p>
-      )}
+    {book.volumeInfo.authors && (
+      <p>
+        <strong>Författare:</strong>{" "}
+        {book.volumeInfo.authors.join(", ")}
+      </p>
+    )}
 
-      <hr style={{ margin: "2rem 0" }} />
+    <hr style={{ margin: "2rem 0" }} />
 
-      <h2>Recensioner</h2>
+    <h2>Recensioner</h2>
 
-      {loadingReviews && <p>Laddar recensioner...</p>}
-      {reviews.length === 0 && <p>Inga recensioner ännu.</p>}
+    <RatingSummary reviews={reviews} />
 
-      {reviews.map((review) => {
-        const isOwner = review.user?.id === currentUserId;
+    {loadingReviews && <p>Laddar recensioner...</p>}
 
-        return (
-          <div
-            key={review.id}
-            style={{
-              border: "1px solid #ccc",
-              padding: "1rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <strong>{review.user?.email}</strong>
+    {reviews.map((review) => {
+      const isOwner = review.user?.id === currentUserId;
 
-            {editingId === review.id ? (
-              <>
-                <textarea
-                  value={editText}
-                  onChange={(e) =>
-                    setEditText(e.target.value)
-                  }
-                />
-                <select
-                  value={editRating}
-                  onChange={(e) =>
-                    setEditRating(Number(e.target.value))
-                  }
-                >
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <option key={num} value={num}>
-                      {num}
-                    </option>
-                  ))}
-                </select>
+      return (
+        <div
+          key={review.id}
+          style={{
+            border: "1px solid #ccc",
+            padding: "1rem",
+            marginBottom: "1rem",
+          }}
+        >
+          <strong>{review.user?.email}</strong>
 
-                <button
-                  onClick={() =>
-                    handleUpdateReview(review.id)
-                  }
-                >
-                  Spara
-                </button>
-                <button
-                  onClick={() => setEditingId(null)}
-                >
-                  Avbryt
-                </button>
-              </>
-            ) : (
-              <>
-                <p>Betyg: {review.rating} ⭐</p>
-                <p>{review.text}</p>
+          {editingId === review.id ? (
+            <>
+              <textarea
+                value={editText}
+                onChange={(e) =>
+                  setEditText(e.target.value)
+                }
+              />
 
-                {isOwner && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setEditingId(review.id);
-                        setEditText(review.text);
-                        setEditRating(review.rating);
-                      }}
-                    >
-                      Redigera
-                    </button>
+              <select
+                value={editRating}
+                onChange={(e) =>
+                  setEditRating(Number(e.target.value))
+                }
+              >
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))}
+              </select>
 
-                    <button
-                      onClick={() =>
-                        handleDeleteReview(review.id)
-                      }
-                    >
-                      Ta bort
-                    </button>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        );
-      })}
+              <button
+                onClick={() =>
+                  handleUpdateReview(review.id)
+                }
+              >
+                Spara
+              </button>
 
-      {isAuthenticated && (
-        <div style={{ marginTop: "2rem" }}>
-          <h3>Skriv recension</h3>
+              <button
+                onClick={() => setEditingId(null)}
+              >
+                Avbryt
+              </button>
+            </>
+          ) : (
+            <>
+              <p>Betyg: {review.rating} ⭐</p>
+              <p>{review.text}</p>
 
-          <textarea
-            value={newReview}
-            onChange={(e) =>
-              setNewReview(e.target.value)
-            }
-          />
+              {isOwner && (
+                <>
+                  <button
+                    onClick={() => {
+                      setEditingId(review.id);
+                      setEditText(review.text);
+                      setEditRating(review.rating);
+                    }}
+                  >
+                    Redigera
+                  </button>
 
-          <select
-            value={rating}
-            onChange={(e) =>
-              setRating(Number(e.target.value))
-            }
-          >
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
-
-          <button onClick={handleCreateReview}>
-            Skicka recension
-          </button>
+                  <button
+                    onClick={() =>
+                      handleDeleteReview(review.id)
+                    }
+                  >
+                    Ta bort
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
-      )}
-    </div>
-  );
+      );
+    })}
+
+    {isAuthenticated && (
+      <div style={{ marginTop: "2rem" }}>
+        <h3>Skriv recension</h3>
+
+        <textarea
+          value={newReview}
+          onChange={(e) =>
+            setNewReview(e.target.value)
+          }
+        />
+
+        <select
+          value={rating}
+          onChange={(e) =>
+            setRating(Number(e.target.value))
+          }
+        >
+          {[1, 2, 3, 4, 5].map((num) => (
+            <option key={num} value={num}>
+              {num}
+            </option>
+          ))}
+        </select>
+
+        <button onClick={handleCreateReview}>
+          Skicka recension
+        </button>
+      </div>
+    )}
+  </div>
+);
 }
