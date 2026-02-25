@@ -19,15 +19,17 @@ export const authenticate = (
   const token = authHeader.split(" ")[1];
 
   try {
+    console.log("VERIFY SECRET:", process.env.JWT_SECRET);
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
     ) as { userId: string };
-
+    console.log("DECODED:", decoded);
     req.userId = decoded.userId;
 
     next();
-  } catch {
-    return res.sendStatus(403);
-  }
+  } catch (err) {
+  console.log("VERIFY ERROR:", err);
+  return res.sendStatus(403);
+}
 };

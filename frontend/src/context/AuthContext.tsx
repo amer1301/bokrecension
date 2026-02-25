@@ -1,54 +1,61 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 type AuthContextType = {
-    token: string | null;
-    isAuthenticated: boolean;
-    login: (token: string) => void;
-    logout: () => void;
+  token: string | null;
+  isAuthenticated: boolean;
+  userId: string | null;
+  login: (token: string) => void;
+  logout: () => void;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("token")
+  );
 
-    //Ladda token från LocalStorage vid start
-    useEffect(() => {
-        const storedToken = localStorage.getItem("token");
-        if (storedToken) {
-            setToken(storedToken);
-        }
-    }, []);
+  const [userId, setUserId] = useState<string | null>(null);
 
-    const login = (newToken: string) => {
-        localStorage.setItem("token", newToken);
-        setToken(newToken);
-    };
-
-    const logout = () => {
-        localStorage.removeItem("token");
-        setToken(null);
-    };
-
-    return (
-        <AuthContext.Provider
-        value={{
-            token,
-            isAuthenticated: !!token, //boolean
-            login,
-            logout,
-        }}
-        >
-            {children}
-        </AuthContext.Provider>
-    );
-}
-
-//Custom hook
-export function useAuth() {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error("useAuth måste användas inom AuthProvider");
+  useEffect(() => {
+    if (token) {
+      const payload = JSON.parse(
+        atob(token.split(".")[1])
+      );
+      setUserId(payload.userId);
+    } else {
+      setUserId(null);
     }
-    return context;
+  }, [token]);
+
+  const login = (newToken: string) => {
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        token,
+        isAuthenticated: !!token,
+        userId,
+        login,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context)
+    throw new Error("useAuth måste användas inom AuthProvider");
+  return context;
+};

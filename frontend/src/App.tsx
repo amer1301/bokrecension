@@ -3,6 +3,7 @@ import HomePage from "./pages/HomePage";
 import BookDetailsPage from "./pages/BookDetailsPage";
 import LoginPage from "./pages/LoginPage";
 import { useAuth } from "./context/AuthContext";
+import ProfilePage from "./pages/ProfilePage";
 
 export default function App() {
 
@@ -13,6 +14,7 @@ export default function App() {
         <Link to="/" style={{ marginRight: "1rem" }}>
           Hem
         </Link>
+        <Link to="/profil">Min profil</Link>
 
         {!isAuthenticated && (
           <Link to="/login">Logga in</Link>
@@ -29,6 +31,7 @@ export default function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/book/:id" element={<BookDetailsPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/profil" element={<ProfilePage />} />
     </Routes>
     </BrowserRouter>
   );

@@ -63,6 +63,8 @@ router.post("/login", async (req, res) => {
             return res.status(401).json({ error: "Felaktigt lösenord." });
         }
 
+        console.log("LOGIN SECRET:", process.env.JWT_SECRET);
+        
         const token = jwt.sign(
             { userId: user.id },
             process.env.JWT_SECRET as string,

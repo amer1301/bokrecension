@@ -71,4 +71,52 @@ router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
     res.json({ message: "Recension borttagen" });
 });
 
+/* =========================
+   LIKE RECENSION (Protected)
+========================= */
+
+router.post("/:id/like", authenticate, async (req: AuthRequest, res) => {
+  const reviewId = req.params.id as string;
+
+  if (!req.userId) return res.sendStatus(401);
+
+  // Kontrollera om redan gillad
+  const existing = await prisma.reviewLike.findFirst({
+    where: {
+      reviewId,
+      userId: req.userId,
+    },
+  });
+
+  if (existing) return res.status(400).json({ message: "Redan gillad" });
+
+  await prisma.reviewLike.create({
+    data: {
+      reviewId,
+      userId: req.userId,
+    },
+  });
+
+  res.json({ message: "Gillad" });
+});
+
+/* =========================
+   TA BORT LIKE (Protected)
+========================= */
+
+router.delete("/:id/like", authenticate, async (req: AuthRequest, res) => {
+  const reviewId = req.params.id as string;
+
+  if (!req.userId) return res.sendStatus(401);
+
+  await prisma.reviewLike.deleteMany({
+    where: {
+      reviewId,
+      userId: req.userId,
+    },
+  });
+
+  res.json({ message: "Like borttagen" });
+});
+
 export default router;

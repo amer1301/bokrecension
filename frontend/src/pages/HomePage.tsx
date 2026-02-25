@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import BookList from "../components/BookList";
 
 /* =========================
@@ -44,6 +44,7 @@ export default function HomePage() {
   const [myBooks, setMyBooks] = useState<MyBook[]>([]);
 
   const { token, isAuthenticated } = useAuth();
+  const location = useLocation();
 
   /* =========================
      HÄMTA ANVÄNDARENS STATUSAR
@@ -66,14 +67,22 @@ export default function HomePage() {
         if (!response.ok) return;
 
         const data = await response.json();
-        setMyStatuses(data);
+
+        // sortera senaste först
+        const sorted = data.sort(
+          (a: ReadingStatus, b: ReadingStatus) =>
+            new Date(b.updatedAt).getTime() -
+            new Date(a.updatedAt).getTime()
+        );
+
+        setMyStatuses(sorted);
       } catch (error) {
         console.error("Kunde inte hämta lässtatusar");
       }
     };
 
     fetchMyStatuses();
-  }, [token]);
+  }, [token, location.pathname]); // 👈 viktigt
 
   /* =========================
      HÄMTA BOKDETALJER
@@ -81,7 +90,10 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchBooks = async () => {
-      if (myStatuses.length === 0) return;
+      if (myStatuses.length === 0) {
+        setMyBooks([]);
+        return;
+      }
 
       const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
@@ -92,17 +104,19 @@ export default function HomePage() {
               `https://www.googleapis.com/books/v1/volumes/${status.bookId}?key=${apiKey}`
             );
 
-            if (!response.ok) return null;
+            if (!response.ok) {
+              return null;
+            }
 
             const data = await response.json();
 
             return {
-  id: status.bookId,
-  title: data.volumeInfo.title,
-  thumbnail: data.volumeInfo.imageLinks?.thumbnail,
-  status: status.status,
-  updatedAt: status.updatedAt,
-};
+              id: status.bookId,
+              title: data.volumeInfo.title,
+              thumbnail: data.volumeInfo.imageLinks?.thumbnail,
+              status: status.status,
+              updatedAt: status.updatedAt,
+            };
           } catch {
             return null;
           }
@@ -153,6 +167,21 @@ export default function HomePage() {
   };
 
   /* =========================
+     ÖVERSÄTT
+  ========================= */
+  const translateStatus = (status: string) => {
+  switch (status) {
+    case "want_to_read":
+      return "Vill läsa";
+    case "reading":
+      return "Läser";
+    case "finished":
+      return "Klar";
+    default:
+      return status;
+  }
+};
+  /* =========================
      RENDER
   ========================= */
 
@@ -160,20 +189,20 @@ export default function HomePage() {
     <div style={{ padding: "2rem" }}>
       <h1>Bokrecensioner</h1>
 
-{isAuthenticated && (
-  <>
-    <h2>📚 Mitt bibliotek</h2>
-    <p style={{ color: "#666" }}>
-      Dina senast uppdaterade böcker
-    </p>
-  </>
-)}
+      {isAuthenticated && (
+        <>
+          <h2>📚 Mitt bibliotek</h2>
+          <p style={{ color: "#666" }}>
+            Dina senast uppdaterade böcker
+          </p>
+        </>
+      )}
 
       {/* =========================
          MINA BÖCKER
       ========================= */}
 
-{isAuthenticated && myBooks.length > 0 && (
+      {isAuthenticated && myBooks.length > 0 && (
         <div style={{ marginBottom: "2rem" }}>
           <h2>Mina böcker</h2>
 
@@ -202,7 +231,7 @@ export default function HomePage() {
                   <strong>{book.title}</strong>
                 </Link>
                 <p style={{ margin: 0 }}>
-                  Status: {book.status}
+                  Status: {translateStatus(book.status)}
                 </p>
               </div>
             </div>

@@ -7,6 +7,25 @@ const router = Router();
 /* =========================
    HÄMTA STATUS FÖR BOK
 ========================= */
+
+router.get("/", authenticate, async (req: AuthRequest, res) => {
+  try {
+    const statuses = await prisma.readingStatus.findMany({
+      where: {
+        userId: req.userId!,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    res.json(statuses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Kunde inte hämta statusar" });
+  }
+});
+
 router.get("/:bookId", authenticate, async (req: AuthRequest, res) => {
     const bookId = req.params.bookId as string;
 
