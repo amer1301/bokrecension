@@ -1,0 +1,56 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.card {
+  background: white;
+  padding: 3rem;
+  border-radius: 20px;
+  width: 400px;
+  box-shadow: 0 20px 40px rgba(232,191,207,0.2);
+  border: 1px solid #f3e7ec;
+}
+
+.card h1 {
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.inputGroup {
+  margin-bottom: 1.5rem;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #f0e6ea;
+  background: #faf6f8;
+}
+
+.button {
+  width: 100%;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 12px;
+  background: #e8bfcf;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.button:hover {
+  opacity: 0.85;
+}
+
+.error {
+  color: #d46a8c;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+}

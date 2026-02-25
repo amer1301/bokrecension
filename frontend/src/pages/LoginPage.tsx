@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import styles from "./Login/Login.module.css";
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -44,41 +45,47 @@ export default function LoginPage() {
         }
     };
 
-    return (
-        <div style={{ padding: "1rem" }}>
-            <h1>Logga in</h1>
+return (
+  <div className={styles.wrapper}>
+    <div className={styles.card}>
+      <h1>Logga in</h1>
 
-            <form onSubmit={handleLogin}>
-                <div style={{ marginBottom: "1rem" }}>
-                    <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    />
-                </div>
-
-                <div style={{ marginBottom: "1rem" }}>
-                    <input
-                    type="password"
-                    placeholder="Lösenord"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    />
-                </div>
-
-                <button type="submit" disabled={loading}>
-                    {loading ? "Loggar in..." : "Logga in"}
-                </button>
-            </form>
-
-            {error && (
-                <p style={{ color: "red", marginTop: "1rem" }}>
-                    {error}
-                </p>
-            )}
+      <form onSubmit={handleLogin}>
+        <div className={styles.inputGroup}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
-    );
+
+        <div className={styles.inputGroup}>
+          <input
+            type="password"
+            placeholder="Lösenord"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          className={styles.button}
+          disabled={loading}
+        >
+          {loading ? "Loggar in..." : "Logga in"}
+        </button>
+      </form>
+
+      {error && (
+        <p className={styles.error}>
+          {error}
+        </p>
+      )}
+    </div>
+  </div>
+);
 }

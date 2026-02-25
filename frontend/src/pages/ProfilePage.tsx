@@ -1,5 +1,6 @@
 import { useAuth } from "../context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import styles from "./Profile.module.css";
 
 type ProfileStats = {
   totalReviews: number;
@@ -10,7 +11,13 @@ type ProfileStats = {
 export default function ProfilePage() {
   const { token } = useAuth();
 
-  if (!token) return <p>Du måste vara inloggad.</p>;
+  if (!token) {
+    return (
+      <div className={styles.centerMessage}>
+        <p>Du måste vara inloggad.</p>
+      </div>
+    );
+  }
 
   const userId = JSON.parse(
     atob(token.split(".")[1])
@@ -28,21 +35,44 @@ export default function ProfilePage() {
     },
   });
 
-  if (isLoading) return <p>Laddar...</p>;
-  if (!data) return <p>Ingen data hittades.</p>;
+  if (isLoading) {
+    return (
+      <div className={styles.centerMessage}>
+        <p>Laddar...</p>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className={styles.centerMessage}>
+        <p>Ingen data hittades.</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Min profil</h1>
+    <div>
+      <div className={styles.header}>
+        <h1>Min profil</h1>
+      </div>
 
-      <p>Antal recensioner: {data.totalReviews}</p>
+      <div className={styles.stats}>
+        <div className={styles.statCard}>
+          <h2>{data.totalReviews}</h2>
+          <p>Recensioner</p>
+        </div>
 
-      <p>
-        Genomsnittsbetyg:{" "}
-        {data.avgRating.toFixed(1)}
-      </p>
+        <div className={styles.statCard}>
+          <h2>{data.avgRating.toFixed(1)}</h2>
+          <p>Snittbetyg</p>
+        </div>
 
-      <p>Totala likes: {data.totalLikes}</p>
+        <div className={styles.statCard}>
+          <h2>{data.totalLikes}</h2>
+          <p>Totala likes</p>
+        </div>
+      </div>
     </div>
   );
 }

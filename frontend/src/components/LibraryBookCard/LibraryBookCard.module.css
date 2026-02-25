@@ -1,0 +1,29 @@
+.card {
+  display: flex;
+  gap: 1.5rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(232,191,207,0.15);
+  border: 1px solid #f3e7ec;
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card img {
+  width: 90px;
+  border-radius: 10px;
+}
+
+.info h3 {
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 0.5rem;
+}
+
+.info p {
+  color: #8f8f8f;
+  font-size: 0.9rem;
+}

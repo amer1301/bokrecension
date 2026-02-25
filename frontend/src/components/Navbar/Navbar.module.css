@@ -1,0 +1,54 @@
+.navbar {
+  background: white;
+  padding: 1.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+}
+
+.links a {
+  margin-left: 2rem;
+  font-weight: 300;
+  color: var(--color-text);
+  transition: 0.2s ease;
+}
+
+.links a:hover {
+  color: var(--color-primary);
+}
+
+.logoutButton {
+  background: transparent;
+  border: 1px solid rgb(220, 39, 166);
+  padding: 0.5rem 1.2rem;
+  margin-left: 1em;
+  border-radius: 20px;
+  color: rgb(220, 39, 166);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.logoutButton:hover {
+  background: rgb(220, 39, 166);
+  color: white;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+}

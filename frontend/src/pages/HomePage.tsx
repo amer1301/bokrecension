@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import BookList from "../components/BookList";
+import styles from "./Home.module.css";
 
 /* =========================
    TYPER
@@ -186,85 +187,66 @@ export default function HomePage() {
   ========================= */
 
   return (
-    <div style={{ padding: "2rem" }}>
+  <>
+    {/* ================= HERO ================= */}
+    <div className={styles.hero}>
       <h1>Bokrecensioner</h1>
-
-      {isAuthenticated && (
-        <>
-          <h2>📚 Mitt bibliotek</h2>
-          <p style={{ color: "#666" }}>
-            Dina senast uppdaterade böcker
-          </p>
-        </>
-      )}
-
-      {/* =========================
-         MINA BÖCKER
-      ========================= */}
-
-      {isAuthenticated && myBooks.length > 0 && (
-        <div style={{ marginBottom: "2rem" }}>
-          <h2>Mina böcker</h2>
-
-          {myBooks.map((book) => (
-            <div
-              key={book.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "1rem",
-              }}
-            >
-              {book.thumbnail && (
-                <img
-                  src={book.thumbnail}
-                  alt={book.title}
-                  style={{
-                    width: "50px",
-                    marginRight: "1rem",
-                  }}
-                />
-              )}
-
-              <div>
-                <Link to={`/book/${book.id}`}>
-                  <strong>{book.title}</strong>
-                </Link>
-                <p style={{ margin: 0 }}>
-                  Status: {translateStatus(book.status)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* =========================
-         SÖK
-      ========================= */}
-
-      <div style={{ marginBottom: "1rem" }}>
-        <input
-          type="text"
-          placeholder="Sök efter bok..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ padding: "0.5rem", width: "300px" }}
-        />
-        <button
-          onClick={searchBooks}
-          style={{ marginLeft: "0.5rem" }}
-        >
-          Sök
-        </button>
-      </div>
-
-      {loading && <p>Laddar...</p>}
-      {error && (
-        <p style={{ color: "red" }}>{error}</p>
-      )}
-
-      <BookList books={books} />
+      <p>Din personliga plats för att läsa, recensera och upptäcka böcker.</p>
     </div>
-  );
+
+    {/* ================= MITT BIBLIOTEK ================= */}
+    {isAuthenticated && (
+      <>
+        <h2 className={styles.sectionTitle}>📚 Mitt bibliotek</h2>
+        <p className={styles.subText}>
+          Dina senast uppdaterade böcker
+        </p>
+      </>
+    )}
+
+    {/* ================= MINA BÖCKER ================= */}
+    {isAuthenticated && myBooks.length > 0 && (
+      <div className={styles.bookList}>
+        {myBooks.map((book) => (
+          <div key={book.id} className={styles.bookItem}>
+            {book.thumbnail && (
+              <img
+                src={book.thumbnail}
+                alt={book.title}
+                className={styles.thumbnail}
+              />
+            )}
+
+            <div>
+              <Link to={`/book/${book.id}`} className={styles.bookLink}>
+                {book.title}
+              </Link>
+              <p className={styles.status}>
+                Status: {translateStatus(book.status)}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* ================= SÖK ================= */}
+    <div className={styles.searchWrapper}>
+      <input
+        type="text"
+        placeholder="Sök efter bok..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      <button onClick={searchBooks}>
+        Sök
+      </button>
+    </div>
+
+    {loading && <p className={styles.message}>Laddar...</p>}
+    {error && <p className={styles.error}>{error}</p>}
+
+    <BookList books={books} />
+  </>
+);
 }
