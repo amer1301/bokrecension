@@ -1,37 +1,43 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import RatingSummary from "../components/RatingSummary";
+import { likeReview, unlikeReview } from "../api/reviewApi";
+
+import { getBookDetails } from "../api/bookApi";
+import {
+  getReviews,
+  createReview,
+  updateReview,
+  deleteReview,
+} from "../api/reviewApi";
+import {
+  getReadingStatus,
+  updateReadingStatus,
+} from "../api/readingStatusApi";
 
 /* =========================
    TYPER
 ========================= */
-
-type GoogleBookDetails = {
-  id: string;
-  volumeInfo: {
-    title: string;
-    authors?: string[];
-    description?: string;
-    imageLinks?: {
-      thumbnail?: string;
-    };
-    publishedDate?: string;
-    publisher?: string;
-    pageCount?: number;
-  };
-};
 
 type Review = {
   id: string;
   text: string;
   rating: number;
   createdAt: string;
+  likesCount: number;
+  isLikedByUser: boolean;
   user?: {
     email: string;
     id: string;
   };
 };
+
+/* =========================
+   HJÄLPFUNKTIONER
+========================= */
 
 const formatRelativeTime = (dateString: string) => {
   const diff = Date.now() - new Date(dateString).getTime();
@@ -47,10 +53,6 @@ const formatRelativeTime = (dateString: string) => {
   return `${days} dagar sedan`;
 };
 
-/* =========================
-   JWT HJÄLP
-========================= */
-
 const getUserIdFromToken = (token: string) => {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -60,14 +62,21 @@ const getUserIdFromToken = (token: string) => {
   }
 };
 
+/* =========================
+   KOMPONENT
+========================= */
+
 export default function BookDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const { token, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
   const currentUserId = token ? getUserIdFromToken(token) : null;
 
-  const [book, setBook] = useState<GoogleBookDetails | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  /* =========================
+     LOKAL STATE (endast UI)
+  ========================= */
+
   const [newReview, setNewReview] = useState("");
   const [rating, setRating] = useState(5);
 
@@ -75,505 +84,570 @@ export default function BookDetailsPage() {
   const [editText, setEditText] = useState("");
   const [editRating, setEditRating] = useState(5);
 
-  const [loadingBook, setLoadingBook] = useState(false);
-  const [loadingReviews, setLoadingReviews] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const [readingStatus, setReadingStatus] = useState<string | null>(null);
-  const [loadingStatus, setLoadingStatus] = useState(false);
-
   const [pagesRead, setPagesRead] = useState<number>(0);
 
   /* =========================
      HÄMTA BOK
   ========================= */
 
-  useEffect(() => {
-    const fetchBook = async () => {
-      if (!id) return;
-
-      setLoadingBook(true);
-      setError(null);
-
-      try {
-        const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
-
-        const response = await fetch(
-          `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
-        );
-
-        if (!response.ok) {
-          throw new Error("Kunde inte hämta bokdetaljer.");
-        }
-
-        const data = await response.json();
-        setBook(data);
-      } catch {
-        setError("Ett fel uppstod vid hämtning av bok.");
-      } finally {
-        setLoadingBook(false);
-      }
-    };
-
-    fetchBook();
-  }, [id]);
+  const {
+    data: book,
+    isLoading: loadingBook,
+    isError: bookError,
+  } = useQuery({
+    queryKey: ["book", id],
+    queryFn: () => getBookDetails(id!),
+    enabled: !!id,
+  });
 
   /* =========================
      HÄMTA RECENSIONER
   ========================= */
 
-  const fetchReviews = async () => {
-    if (!id) return;
+  const {
+    data: reviews = [],
+    isLoading: loadingReviews,
+  } = useQuery<Review[]>({
+    queryKey: ["reviews", id],
+    queryFn: () => getReviews(id!),
+    enabled: !!id,
+  });
 
-    setLoadingReviews(true);
+  /* =========================
+     HÄMTA LÄSSTATUS
+  ========================= */
 
-    try {
-      const response = await fetch(
-        `http://localhost:3000/reviews/${id}`
-      );
-      const data = await response.json();
-      setReviews(data);
-    } catch {
-      console.error("Kunde inte hämta recensioner.");
-    } finally {
-      setLoadingReviews(false);
-    }
-  };
+  const {
+    data: readingData,
+    isLoading: loadingStatus,
+  } = useQuery({
+    queryKey: ["readingStatus", id],
+    queryFn: () => getReadingStatus(token!, id!),
+    enabled: !!token && !!id,
+  });
 
   useEffect(() => {
-    fetchReviews();
-  }, [id]);
-
-  useEffect(() => {
-  const fetchReadingStatus = async () => {
-    if (!token || !id) return;
-
-    setLoadingStatus(true);
-
-    try {
-      const response = await fetch(
-        `http://localhost:3000/reading-status/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) return;
-
-      const data = await response.json();
-
-      if (data) {
-        setReadingStatus(data.status);
-        setPagesRead(data.pagesRead ?? 0);
-      }
-    } catch (error) {
-      console.error("Kunde inte hämta lässtatus");
-    } finally {
-      setLoadingStatus(false);
+    if (readingData) {
+      setReadingStatus(readingData.status);
+      setPagesRead(readingData.pagesRead ?? 0);
     }
-  };
-
-  fetchReadingStatus();
-}, [id, token]);
+  }, [readingData]);
 
   /* =========================
-     SKAPA RECENSION
-  ========================= */
-
-  const handleCreateReview = async () => {
-    if (!token || !id || !newReview.trim()) return;
-
-    try {
-      const response = await fetch(
-        "http://localhost:3000/reviews",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            bookId: id,
-            text: newReview.trim(),
-            rating,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Kunde inte skapa recension.");
-      }
-
-      setNewReview("");
-      setRating(5);
-      fetchReviews();
-    } catch (error) {
-      console.error("Fel vid skapande:", error);
-    }
-  };
-
-  /* =========================
-     UPPDATERA RECENSION
-  ========================= */
-
-  const handleUpdateReview = async (reviewId: string) => {
-    if (!token) return;
-
-    try {
-      const response = await fetch(
-        `http://localhost:3000/reviews/${reviewId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            text: editText,
-            rating: editRating,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Kunde inte uppdatera recension.");
-      }
-
-      setEditingId(null);
-      fetchReviews();
-    } catch (error) {
-      console.error("Fel vid uppdatering:", error);
-    }
-  };
-
-  /* =========================
-     TA BORT RECENSION
-  ========================= */
-
-  const handleDeleteReview = async (reviewId: string) => {
-    if (!token) return;
-
-    try {
-      const response = await fetch(
-        `http://localhost:3000/reviews/${reviewId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Kunde inte ta bort recension.");
-      }
-
-      fetchReviews();
-    } catch (error) {
-      console.error("Fel vid borttagning:", error);
-    }
-  };
-
-  const handleStatusChange = async (newStatus: string) => {
-  if (!token || !id || !newStatus) return;
-
-  try {
-    const response = await fetch(
-      "http://localhost:3000/reading-status",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          bookId: id,
-          status: newStatus,
-          pagesRead,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Kunde inte uppdatera status");
-    }
-
-    setReadingStatus(newStatus);
-  } catch (error) {
-    console.error("Fel vid uppdatering av status:", error);
-  }
-};
-
-/* =========================
-   RENDER
+   MUTATIONS
 ========================= */
 
-if (loadingBook) return <p>Laddar bok...</p>;
-if (error) return <p style={{ color: "red" }}>{error}</p>;
-if (!book) return <p>Ingen bok hittades.</p>;
+const createReviewMutation = useMutation({
+  mutationFn: (data: {
+    bookId: string;
+    text: string;
+    rating: number;
+  }) => createReview(token!, data),
 
-return (
-  <div style={{ padding: "2rem" }}>
-    <h1>{book.volumeInfo.title}</h1>
+  // OPTIMISTIC UPDATE
+  onMutate: async (newReview) => {
+    await queryClient.cancelQueries({
+      queryKey: ["reviews", id],
+    });
 
-    {book.volumeInfo.authors && (
-      <p>
-        <strong>Författare:</strong>{" "}
-        {book.volumeInfo.authors.join(", ")}
-      </p>
-    )}
+    const previousReviews =
+      queryClient.getQueryData<Review[]>([
+        "reviews",
+        id,
+      ]);
 
-    <hr style={{ margin: "2rem 0" }} />
+    const optimisticReview: Review = {
+      id: "temp-" + Date.now(),
+      text: newReview.text,
+      rating: newReview.rating,
+      createdAt: new Date().toISOString(),
+      likesCount: 0,
+isLikedByUser: false,
+      user: {
+        id: currentUserId!,
+        email: "Du",
+      },
+    };
 
-    {/* =========================
-       LÄSSTATUS
-    ========================= */}
+    queryClient.setQueryData<Review[]>(
+      ["reviews", id],
+      (old = []) => [...old, optimisticReview]
+    );
 
-    {isAuthenticated && (
-      <div style={{ marginBottom: "2rem" }}>
-        <h3>Min lässtatus</h3>
+    return { previousReviews };
+  },
 
-        {loadingStatus ? (
-          <p>Laddar status...</p>
-        ) : (
-          <>
-            <select
-              value={readingStatus ?? ""}
-              onChange={(e) =>
-                handleStatusChange(e.target.value)
-              }
-            >
-              <option value="">Välj status</option>
-              <option value="want_to_read">Vill läsa</option>
-              <option value="reading">Läser</option>
-              <option value="finished">Klar</option>
-            </select>
+  // Rollback om något går fel
+  onError: (_err, _newReview, context) => {
+    queryClient.setQueryData(
+      ["reviews", id],
+      context?.previousReviews
+    );
+  },
 
-            {/* PagesRead visas bara när man läser */}
-            {readingStatus === "reading" && (
-              <div style={{ marginTop: "1rem" }}>
-                <label>Sidor lästa: </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={pagesRead}
-                  onChange={(e) =>
-                    setPagesRead(Number(e.target.value))
-                  }
-                  style={{ marginLeft: "0.5rem" }}
-                />
+  // Sync med servern
+  onSettled: () => {
+    queryClient.invalidateQueries({
+      queryKey: ["reviews", id],
+    });
+  },
+});
 
-                {/* Progress bar */}
-                {book.volumeInfo.pageCount &&
-                  pagesRead > 0 && (
-                    <div style={{ marginTop: "1rem" }}>
-                      <div
-                        style={{
-                          height: "10px",
-                          background: "#eee",
-                          borderRadius: "5px",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <div
-                          style={{
-                            height: "100%",
-                            width: `${
-                              (pagesRead /
-                                book.volumeInfo.pageCount) *
-                              100
-                            }%`,
-                            background: "#4caf50",
-                          }}
-                        />
-                      </div>
-                      <small>
-                        {pagesRead} /{" "}
-                        {book.volumeInfo.pageCount} sidor
-                      </small>
-                    </div>
-                  )}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    )}
 
-    {/* =========================
-       RECENSIONER
-    ========================= */}
+const updateReviewMutation = useMutation({
+  mutationFn: (data: {
+    reviewId: string;
+    text: string;
+    rating: number;
+  }) =>
+    updateReview(token!, data.reviewId, {
+      text: data.text,
+      rating: data.rating,
+    }),
 
-    <h2>Recensioner</h2>
+  onSuccess: () => {
+    queryClient.invalidateQueries({
+      queryKey: ["reviews", id],
+    });
+  },
+});
 
-    <RatingSummary reviews={reviews} />
 
-    {loadingReviews && <p>Laddar recensioner...</p>}
+const deleteReviewMutation = useMutation({
+  mutationFn: (reviewId: string) =>
+    deleteReview(token!, reviewId),
 
-    {reviews.map((review) => {
-      const isOwner =
-        review.user?.id === currentUserId;
+  // OPTIMISTIC DELETE
+  onMutate: async (reviewId) => {
+    await queryClient.cancelQueries({
+      queryKey: ["reviews", id],
+    });
 
-      return (
-        <div
-          key={review.id}
-          style={{
-            border: "1px solid #ddd",
-            padding: "1rem",
-            marginBottom: "1rem",
-            borderRadius: "10px",
-          }}
-        >
-          <strong>{review.user?.email}</strong>
+    const previousReviews =
+      queryClient.getQueryData<Review[]>([
+        "reviews",
+        id,
+      ]);
 
-          <p
-            style={{
-              fontSize: "0.8rem",
-              color: "#666",
-              marginTop: "0.3rem",
-            }}
-          >
-            {formatRelativeTime(
-              review.createdAt
-            )}
-          </p>
+    queryClient.setQueryData<Review[]>(
+      ["reviews", id],
+      (old = []) =>
+        old.filter(
+          (review) => review.id !== reviewId
+        )
+    );
 
-          {editingId === review.id ? (
-            <>
-              <textarea
-                value={editText}
-                onChange={(e) =>
-                  setEditText(e.target.value)
-                }
-                rows={3}
-                style={{ width: "100%" }}
-              />
+    return { previousReviews };
+  },
 
-              <select
-                value={editRating}
-                onChange={(e) =>
-                  setEditRating(
-                    Number(e.target.value)
-                  )
-                }
-              >
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <option key={num} value={num}>
-                    {num}
-                  </option>
-                ))}
-              </select>
+  // Rollback vid fel
+  onError: (_err, _reviewId, context) => {
+    queryClient.setQueryData(
+      ["reviews", id],
+      context?.previousReviews
+    );
+  },
 
-              <div style={{ marginTop: "0.5rem" }}>
-                <button
-                  onClick={() =>
-                    handleUpdateReview(
-                      review.id
-                    )
-                  }
-                >
-                  Spara
-                </button>
+  // Sync med server
+  onSettled: () => {
+    queryClient.invalidateQueries({
+      queryKey: ["reviews", id],
+    });
+  },
+});
 
-                <button
-                  onClick={() =>
-                    setEditingId(null)
-                  }
-                  style={{
-                    marginLeft: "0.5rem",
-                  }}
-                >
-                  Avbryt
-                </button>
-              </div>
-            </>
+
+const updateStatusMutation = useMutation({
+  mutationFn: (data: {
+    bookId: string;
+    status: string;
+    pagesRead: number;
+  }) => updateReadingStatus(token!, data),
+
+  onSuccess: () => {
+    queryClient.invalidateQueries({
+      queryKey: ["readingStatus", id],
+    });
+  },
+});
+
+const toggleLikeMutation = useMutation({
+  mutationFn: (data: {
+    reviewId: string;
+    isLiked: boolean;
+  }) =>
+    data.isLiked
+      ? unlikeReview(token!, data.reviewId)
+      : likeReview(token!, data.reviewId),
+
+  onMutate: async ({ reviewId, isLiked }) => {
+    await queryClient.cancelQueries({
+      queryKey: ["reviews", id],
+    });
+
+    const previous =
+      queryClient.getQueryData<Review[]>([
+        "reviews",
+        id,
+      ]);
+
+    queryClient.setQueryData<Review[]>(
+      ["reviews", id],
+      (old = []) =>
+        old.map((review) => {
+          if (review.id !== reviewId)
+            return review;
+
+          return {
+            ...review,
+            isLikedByUser: !isLiked,
+            likesCount: isLiked
+              ? review.likesCount - 1
+              : review.likesCount + 1,
+          };
+        })
+    );
+
+    return { previous };
+  },
+
+  onError: (_err, _vars, context) => {
+    queryClient.setQueryData(
+      ["reviews", id],
+      context?.previous
+    );
+  },
+
+  onSettled: () => {
+    queryClient.invalidateQueries({
+      queryKey: ["reviews", id],
+    });
+  },
+});
+  /* =========================
+     HANDLERS
+  ========================= */
+
+  const handleCreateReview = () => {
+    if (!newReview.trim()) return;
+
+    createReviewMutation.mutate({
+      bookId: id!,
+      text: newReview,
+      rating,
+    });
+
+    setNewReview("");
+    setRating(5);
+  };
+
+  const handleUpdateReview = (reviewId: string) => {
+    updateReviewMutation.mutate({
+      reviewId,
+      text: editText,
+      rating: editRating,
+    });
+
+    setEditingId(null);
+  };
+
+  const handleDeleteReview = (reviewId: string) => {
+    deleteReviewMutation.mutate(reviewId);
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    if (!newStatus) return;
+
+    updateStatusMutation.mutate({
+      bookId: id!,
+      status: newStatus,
+      pagesRead,
+    });
+
+    setReadingStatus(newStatus);
+  };
+
+  /* =========================
+     RENDER
+  ========================= */
+
+  if (loadingBook) return <p>Laddar bok...</p>;
+  if (bookError) return <p>Ett fel uppstod.</p>;
+  if (!book) return <p>Ingen bok hittades.</p>;
+
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>{book.volumeInfo.title}</h1>
+
+      {book.volumeInfo.authors && (
+        <p>
+          <strong>Författare:</strong>{" "}
+          {book.volumeInfo.authors.join(", ")}
+        </p>
+      )}
+
+      <hr style={{ margin: "2rem 0" }} />
+
+      {/* =========================
+         LÄSSTATUS
+      ========================= */}
+
+      {isAuthenticated && (
+        <div style={{ marginBottom: "2rem" }}>
+          <h3>Min lässtatus</h3>
+
+          {loadingStatus ? (
+            <p>Laddar status...</p>
           ) : (
             <>
-              <p>
-                Betyg: {review.rating} ⭐
-              </p>
-              <p>{review.text}</p>
+              <select
+                value={readingStatus ?? ""}
+                onChange={(e) =>
+                  handleStatusChange(e.target.value)
+                }
+              >
+                <option value="">Välj status</option>
+                <option value="want_to_read">Vill läsa</option>
+                <option value="reading">Läser</option>
+                <option value="finished">Klar</option>
+              </select>
 
-              {isOwner && (
-                <div>
-                  <button
-                    onClick={() => {
-                      setEditingId(
-                        review.id
-                      );
-                      setEditText(
-                        review.text
-                      );
-                      setEditRating(
-                        review.rating
-                      );
-                    }}
-                  >
-                    Redigera
-                  </button>
+              {readingStatus === "reading" &&
+                book.volumeInfo.pageCount && (
+                  <div style={{ marginTop: "1rem" }}>
+                    <input
+                      type="number"
+                      min={0}
+                      value={pagesRead}
+                      onChange={(e) =>
+                        setPagesRead(Number(e.target.value))
+                      }
+                    />
 
-                  <button
-                    onClick={() =>
-                      handleDeleteReview(
-                        review.id
-                      )
-                    }
-                    style={{
-                      marginLeft: "0.5rem",
-                    }}
-                  >
-                    Ta bort
-                  </button>
-                </div>
-              )}
+                    <div
+                      style={{
+                        height: "10px",
+                        background: "#eee",
+                        marginTop: "0.5rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${
+                            (pagesRead /
+                              book.volumeInfo.pageCount) *
+                            100
+                          }%`,
+                          background: "#4caf50",
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
             </>
           )}
         </div>
-      );
-    })}
+      )}
 
-    {/* =========================
-       SKRIV RECENSION
-    ========================= */}
+      {/* =========================
+         RECENSIONER
+      ========================= */}
 
-    {isAuthenticated && (
-      <div style={{ marginTop: "2rem" }}>
-        <h3>Skriv recension</h3>
+      <h2>Recensioner</h2>
 
-        <textarea
-          value={newReview}
-          onChange={(e) =>
-            setNewReview(e.target.value)
-          }
-          rows={4}
-          style={{ width: "100%" }}
-        />
+      <RatingSummary reviews={reviews} />
 
-        <select
-          value={rating}
-          onChange={(e) =>
-            setRating(
-              Number(e.target.value)
-            )
-          }
-        >
-          {[1, 2, 3, 4, 5].map((num) => (
-            <option key={num} value={num}>
-              {num}
-            </option>
-          ))}
-        </select>
+      {loadingReviews && <p>Laddar recensioner...</p>}
+{reviews.map((review) => {
+  const isOwner =
+    review.user?.id === currentUserId;
 
-        <button
-          onClick={handleCreateReview}
-          style={{ marginTop: "1rem" }}
-        >
-          Skicka recension
-        </button>
-      </div>
-    )}
+  return (
+    <div
+      key={review.id}
+      style={{
+        border: "1px solid #ddd",
+        padding: "1rem",
+        marginBottom: "1rem",
+        borderRadius: "10px",
+      }}
+    >
+      <strong>{review.user?.email}</strong>
+
+      <p
+        style={{
+          fontSize: "0.8rem",
+          color: "#666",
+          marginTop: "0.3rem",
+        }}
+      >
+        {formatRelativeTime(review.createdAt)}
+      </p>
+
+      {/* =========================
+         EDIT MODE
+      ========================= */}
+      {editingId === review.id ? (
+        <>
+          <textarea
+            value={editText}
+            onChange={(e) =>
+              setEditText(e.target.value)
+            }
+            rows={3}
+            style={{ width: "100%" }}
+          />
+
+          <select
+            value={editRating}
+            onChange={(e) =>
+              setEditRating(
+                Number(e.target.value)
+              )
+            }
+            style={{ marginTop: "0.5rem" }}
+          >
+            {[1, 2, 3, 4, 5].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+
+          <div style={{ marginTop: "0.5rem" }}>
+            <button
+              onClick={() =>
+                handleUpdateReview(
+                  review.id
+                )
+              }
+            >
+              Spara
+            </button>
+
+            <button
+              onClick={() =>
+                setEditingId(null)
+              }
+              style={{
+                marginLeft: "0.5rem",
+              }}
+            >
+              Avbryt
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p>Betyg: {review.rating} ⭐</p>
+          <p>{review.text}</p>
+
+          {/* ❤️ LIKE KNAPP */}
+          {isAuthenticated && (
+            <button
+              onClick={() =>
+                toggleLikeMutation.mutate({
+                  reviewId: review.id,
+                  isLiked:
+                    review.isLikedByUser,
+                })
+              }
+              style={{
+                marginTop: "0.5rem",
+                cursor: "pointer",
+              }}
+            >
+              {review.isLikedByUser
+                ? "❤️"
+                : "🤍"}{" "}
+              {review.likesCount}
+            </button>
+          )}
+
+          {/* OWNER ACTIONS */}
+          {isOwner && (
+            <div
+              style={{
+                marginTop: "0.5rem",
+              }}
+            >
+              <button
+                onClick={() => {
+                  setEditingId(
+                    review.id
+                  );
+                  setEditText(
+                    review.text
+                  );
+                  setEditRating(
+                    review.rating
+                  );
+                }}
+              >
+                Redigera
+              </button>
+
+              <button
+                onClick={() =>
+                  handleDeleteReview(
+                    review.id
+                  )
+                }
+                style={{
+                  marginLeft: "0.5rem",
+                }}
+              >
+                Ta bort
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+})}
+
+{/* =========================
+   SKRIV RECENSION
+========================= */}
+
+{isAuthenticated && (
+  <div style={{ marginTop: "2rem" }}>
+    <h3>Skriv recension</h3>
+
+    <textarea
+      value={newReview}
+      onChange={(e) =>
+        setNewReview(e.target.value)
+      }
+      rows={4}
+      style={{ width: "100%" }}
+    />
+
+    <select
+      value={rating}
+      onChange={(e) =>
+        setRating(Number(e.target.value))
+      }
+      style={{ marginTop: "0.5rem" }}
+    >
+      {[1, 2, 3, 4, 5].map((n) => (
+        <option key={n} value={n}>
+          {n}
+        </option>
+      ))}
+    </select>
+
+    <button
+      onClick={handleCreateReview}
+      style={{ marginTop: "0.5rem" }}
+    >
+      Skicka recension
+    </button>
   </div>
-);
+)}
+    </div>
+  );
 }

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../prisma";
 import { authenticate, AuthRequest } from "../middleware/authMiddleware";
 
+
 const router = Router();
 
 /* =========================
@@ -29,24 +30,28 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
    HÄMTA RECENSIONER FÖR BOK
 ========================= */
 
-router.get("/:bookId", async (req, res) => {
-    const { bookId } = req.params;
+router.get("/:bookId", async (req: AuthRequest, res) => {
+  const bookId = req.params.bookId as string;
 
-    const reviews = await prisma.review.findMany({
-        where: { bookId },
-        include: {
-            user: {
-                select: {
-                    email: true,
-                    id: true,
-                },
-            },
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
-    });
-    res.json(reviews);
+  const reviews = await prisma.review.findMany({
+    where: { bookId },
+    include: {
+      user: true,
+      likes: true,
+    },
+  });
+
+  const userId = req.userId ?? null;
+
+  const formatted = reviews.map((review) => ({
+    ...review,
+    likesCount: review.likes.length,
+    isLikedByUser: userId
+      ? review.likes.some((like) => like.userId === userId)
+      : false,
+  }));
+
+  res.json(formatted);
 });
 
 /* =========================
