@@ -76,8 +76,13 @@ input:focus {
   min-height: 120px;
   padding: 0.75rem;
   border-radius: 10px;
-  border: 1px solid var(--color-border);
   margin-bottom: 1rem;
+    background: var(--color-input-bg);
+  color: var(--color-input-text);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  resize: vertical;
 }
 
 .reviewControls {
@@ -87,9 +92,18 @@ input:focus {
 }
 
 .submitButton {
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: var(--color-primary);
+background: transparent;
+    border: 1px solid var(--color-button);
+    padding: 0.5rem 1.2rem;
+    margin-left: 1em;
+    border-radius: 20px;
+    color: var(--color-button);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.submitButton:hover {
+  background-color: var(--color-button);
+  color: white;
 }

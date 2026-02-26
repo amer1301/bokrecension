@@ -1,24 +1,60 @@
 :root {
+  /* Backgrounds */
   --color-bg: #fdf7f9;
   --color-surface: #ffffff;
+  --color-surface-soft: #faf4f7;
+
+  /* Brand */
+  --color-button: #d63384;
   --color-primary: #e8bfcf;
   --color-accent: #f3dbe4;
+
+  /* Text */
   --color-text: #2b2b2b;
   --color-muted: #8f8f8f;
+
+  /* Borders */
   --color-border: #f0e6ea;
 
+  /* Inputs */
+  --color-input-bg: #ffffff;
+  --color-input-text: #2b2b2b;
+  --color-input-border: #f0e6ea;
+
+  /* Buttons */
+  --color-button-text: #ffffff;
+
+  /* Effects */
   --shadow-soft: 0 10px 30px rgba(232,191,207,0.15);
   --radius: 16px;
 }
 
 [data-theme="dark"] {
-  --color-bg: #111827;
-  --color-surface: #1f2937;
-  --color-primary: #3b82f6;
-  --color-accent: #374151;
-  --color-text: #f3f4f6;
-  --color-muted: #9ca3af;
-  --color-border: #374151;
+  /* Backgrounds */
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-soft: #334155;
 
-  --shadow-soft: 0 10px 30px rgba(0,0,0,0.4);
+  /* Brand */
+  --color-button: #f472b6;
+  --color-primary: #f9a8d4;
+  --color-accent: #334155;
+
+  /* Text */
+  --color-text: #f1f5f9;
+  --color-muted: #94a3b8;
+
+  /* Borders */
+  --color-border: #334155;
+
+  /* Inputs */
+  --color-input-bg: #111827;
+  --color-input-text: #f1f5f9;
+  --color-input-border: #334155;
+
+  /* Buttons */
+  --color-button-text: #ffffff;
+
+  /* Effects */
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.5);
 }

@@ -37,25 +37,24 @@
 .searchWrapper input {
   flex: 1;
   padding: 0.8rem;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: white;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-input-border);
+  background: var(--color-input-bg);
+  color: var(--color-input-text);
 }
 
 .searchWrapper button {
-  padding: 0.8rem 1.5rem;
-  border-radius: 12px;
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius);
   border: none;
-  border: 1px solid rgb(220, 39, 166);
-  color: rgb(220, 39, 166);
-  background-color: white;
+  background: var(--color-button);
+  color: var(--color-button-text);
   cursor: pointer;
   transition: 0.2s ease;
 }
 
 .searchWrapper button:hover {
-  background: rgb(220, 39, 166);
-  color: white;
+  opacity: 0.9;
 }
 
 .subText {
@@ -81,6 +80,11 @@
   box-shadow: 0 10px 30px rgba(232,191,207,0.15);
   border: 1px solid var(--color-border);
   transition: 0.2s ease;
+}
+
+[data-theme="dark"] .bookItem {
+  background: #111;
+  color: #fff;
 }
 
 .bookItem:hover {
@@ -123,3 +127,4 @@ input:focus {
   border: 2px solid var(--color-primary);
   box-shadow: 0 0 0 3px rgba(232, 191, 207, 0.3);
 }
+

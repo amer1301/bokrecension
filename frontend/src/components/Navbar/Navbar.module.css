@@ -7,6 +7,10 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+[data-theme="dark"] .navbar {
+  background-color: var(--color-border);
+}
+
 .logo {
   font-family: 'Playfair Display', serif;
   font-size: 1.6rem;
@@ -20,7 +24,7 @@
 }
 
 .links a:hover {
-  color: rgb(220, 39, 166);
+  color: var(--color-button);
 }
 
 .links button {
@@ -29,18 +33,18 @@
 
 .logoutButton {
   background: transparent;
-  border: 1px solid rgb(220, 39, 166);
+  border: 1px solid var(--color-button);
   padding: 0.5rem 1.2rem;
   margin-left: 1em;
   border-radius: 20px;
-  color: rgb(220, 39, 166);
+  color: var(--color-button);
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'DM Sans', sans-serif;
 }
 
 .logoutButton:hover {
-  background: rgb(220, 39, 166);
+  background: var(--color-button);
   color: white;
 }
 

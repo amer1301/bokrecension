@@ -39,6 +39,25 @@
   margin-top: 0.75rem;
 }
 
+.editButton,
+.deleteButton {
+      background: transparent;
+    border: 1px solid var(--color-button);
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    color: var(--color-button);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 1em;
+}
+
+.editButton:hover,
+.deleteButton:hover {
+  background:var(--color-button);
+  color: white;
+}
+
 .likeButton {
   background: none;
   border: none;
@@ -52,7 +71,7 @@
 }
 
 .reviewCard {
-  position: relative; /* viktigt för absolut positionering */
+  position: relative;
   background: var(--color-surface);
   border-radius: var(--radius);
   padding: 1.5rem;

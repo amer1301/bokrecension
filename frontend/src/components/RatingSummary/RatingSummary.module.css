@@ -1,9 +1,11 @@
 .summaryCard {
-  background: #ffffff;
   padding: 1.25rem;
   border-radius: 10px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 }
 
 .averageSection {
@@ -48,7 +50,7 @@
 
 .bar {
   height: 100%;
-  background: rgb(220, 39, 166);
+  background: var(--color-button);
   transition: width 0.3s ease;
 }
 
