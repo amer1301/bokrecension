@@ -5,6 +5,8 @@
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--color-border);
   transition: transform 0.2s ease;
+  width: 100%;
+  max-width: 250px;
 }
 
 .card:hover {
