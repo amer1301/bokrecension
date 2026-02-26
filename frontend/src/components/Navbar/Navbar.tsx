@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import styles from "./Navbar.module.css";
 import cuteIcon from "../../assets/cat.png";
+import ThemeToggle from "../ThemeToggle/ThemeToggle";
 
 interface Props {
   isAuthenticated: boolean;
@@ -18,6 +19,7 @@ export default function Navbar({ isAuthenticated, logout }: Props) {
       <div className={styles.links}>
         <Link to="/">Hem</Link>
         <Link to="/profil">Min profil</Link>
+        <ThemeToggle />
 
         {!isAuthenticated && <Link to="/login">Logga in</Link>}
 

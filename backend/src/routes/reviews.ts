@@ -82,21 +82,19 @@ const result = await reviewService.deleteReview(
 });
 
 /* =========================
-   LIKE RECENSION (Protected)
+   LIKE RECENSION
 ========================= */
 
 router.post("/:id/like", authenticate, async (req: AuthRequest, res, next) => {
   try {
-    if (!req.userId) {
-      return res.sendStatus(401);
-    }
+    if (!req.userId) return res.sendStatus(401);
 
     const reviewId = req.params.id as string;
 
-const result = await reviewService.deleteReview(
-  reviewId,
-  req.userId
-);
+    const result = await reviewService.likeReview(
+      reviewId,
+      req.userId
+    );
 
     res.json(result);
   } catch (error) {
@@ -105,26 +103,23 @@ const result = await reviewService.deleteReview(
 });
 
 /* =========================
-   TA BORT LIKE (Protected)
+   TA BORT LIKE
 ========================= */
 
 router.delete("/:id/like", authenticate, async (req: AuthRequest, res, next) => {
   try {
-    if (!req.userId) {
-      return res.sendStatus(401);
-    }
+    if (!req.userId) return res.sendStatus(401);
 
     const reviewId = req.params.id as string;
 
-const result = await reviewService.deleteReview(
-  reviewId,
-  req.userId
-);
+    const result = await reviewService.unlikeReview(
+      reviewId,
+      req.userId
+    );
 
     res.json(result);
   } catch (error) {
     next(error);
   }
 });
-
 export default router;

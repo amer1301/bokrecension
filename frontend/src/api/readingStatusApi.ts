@@ -17,6 +17,23 @@ export async function getReadingStatus(
   return response.json();
 }
 
+export async function getUserLibrary(token: string) {
+  const response = await fetch(
+    "http://localhost:3000/reading-status",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Kunde inte hämta bibliotek");
+  }
+
+  return response.json();
+}
+
 export async function updateReadingStatus(
   token: string,
   data: {

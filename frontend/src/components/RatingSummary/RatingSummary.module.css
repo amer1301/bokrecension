@@ -1,0 +1,59 @@
+.summaryCard {
+  background: #ffffff;
+  padding: 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.averageSection {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.averageValue {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.total {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.label {
+  width: 20px;
+  font-weight: 500;
+}
+
+.barContainer {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: rgb(220, 39, 166);
+  transition: width 0.3s ease;
+}
+
+.count {
+  width: 25px;
+  text-align: right;
+  font-size: 0.85rem;
+}

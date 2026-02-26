@@ -12,24 +12,30 @@ export const authenticate = (
 ) => {
   const authHeader = req.headers.authorization;
 
+  console.log("AUTH HEADER:", authHeader);
+
   if (!authHeader) {
+    console.log("NO AUTH HEADER");
     return res.sendStatus(401);
   }
 
   const token = authHeader.split(" ")[1];
 
+  console.log("TOKEN:", token);
+  console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
   try {
-    console.log("VERIFY SECRET:", process.env.JWT_SECRET);
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
     ) as { userId: string };
-    console.log("DECODED:", decoded);
-    req.userId = decoded.userId;
 
+    console.log("DECODED:", decoded);
+
+    req.userId = decoded.userId;
     next();
   } catch (err) {
-  console.log("VERIFY ERROR:", err);
-  return res.sendStatus(403);
-}
+    console.log("VERIFY ERROR:", err);
+    return res.sendStatus(403);
+  }
 };

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import styles from "./ReadingStatusSection.module.css";
 
 type Props = {
   bookId: string;
@@ -82,69 +83,66 @@ const handleSave = async () => {
   if (loading) return <p>Laddar status...</p>;
 
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      <h3>Min lässtatus</h3>
+  <div style={{ marginBottom: "2rem" }}>
+    <h3>Min lässtatus</h3>
 
-      <select
-        value={status ?? ""}
-        onChange={(e) =>
-          handleChange(e.target.value)
-        }
-      >
-        <option value="">Välj status</option>
-        <option value="want_to_read">Vill läsa</option>
-        <option value="reading">Läser</option>
-        <option value="finished">Klar</option>
-      </select>
+    <select
+      value={status ?? ""}
+      onChange={(e) =>
+        handleChange(e.target.value)
+      }
+    >
+      <option value="">Välj status</option>
+      <option value="want_to_read">Vill läsa</option>
+      <option value="reading">Läser</option>
+      <option value="finished">Klar</option>
+    </select>
 
-      {status === "reading" && pageCount && (
-        <div style={{ marginTop: "1rem" }}>
-          <input
-            type="number"
-            min={0}
-            value={pagesRead}
-            onChange={(e) =>
-              setPagesRead(Number(e.target.value))
-            }
-          />
+    {status === "reading" && pageCount && (
+      <div className={styles.pagesSection}>
+        <label className={styles.label}>
+          Antal sidor jag läst ({pagesRead} / {pageCount})
+        </label>
 
+        <input
+          type="number"
+          min={0}
+          max={pageCount}
+          value={pagesRead}
+          onChange={(e) =>
+            setPagesRead(Number(e.target.value))
+          }
+          className={styles.pagesInput}
+        />
+
+        <div className={styles.progressBar}>
           <div
+            className={styles.progressFill}
             style={{
-              height: "10px",
-              background: "#eee",
-              marginTop: "0.5rem",
+              width: `${(pagesRead / pageCount) * 100}%`,
             }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${
-                  (pagesRead / pageCount) * 100
-                }%`,
-                background: "#4caf50",
-              }}
-            />
-          </div>
+          />
+        </div>
+
+        <p className={styles.progressText}>
+          {Math.round((pagesRead / pageCount) * 100)}% läst
+        </p>
+      </div>
+    )}
 
 <button
   onClick={handleSave}
   disabled={saving}
-  style={{
-    marginTop: "1rem",
-    padding: "0.5rem 1rem",
-    cursor: saving ? "not-allowed" : "pointer",
-    opacity: saving ? 0.6 : 1,
-  }}
+  className={styles.outlineButton}
 >
   {saving ? "Sparar..." : "Spara"}
 </button>
-{savedMessage && (
-  <p style={{ marginTop: "0.5rem", color: "green" }}>
-    {savedMessage}
-  </p>
-)}
-        </div>
-      )}
-    </div>
-  );
+
+    {savedMessage && (
+      <p style={{ marginTop: "0.5rem", color: "black" }}>
+        {savedMessage}
+      </p>
+    )}
+  </div>
+);
 }

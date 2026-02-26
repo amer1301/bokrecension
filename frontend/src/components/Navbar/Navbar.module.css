@@ -20,7 +20,11 @@
 }
 
 .links a:hover {
-  color: var(--color-primary);
+  color: rgb(220, 39, 166);
+}
+
+.links button {
+  margin-left: 2rem;
 }
 
 .logoutButton {

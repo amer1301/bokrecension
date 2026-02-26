@@ -1,0 +1,62 @@
+.pagesSection {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.pagesInput {
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  font-family: inherit;
+  transition: 0.2s ease;
+  margin-bottom: 0.75rem;
+}
+
+.pagesInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(232,191,207,0.25);
+}
+
+.progressBar {
+  height: 10px;
+  background: var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: rgb(220, 39, 166);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.outlineButton {
+  background: transparent;
+  border: 1px solid rgb(220, 39, 166);
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  color: rgb(220, 39, 166);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'DM Sans', sans-serif;
+  margin-top: 1em;
+}
+
+.outlineButton:hover {
+  background: rgb(220, 39, 166);
+  color: white;
+}

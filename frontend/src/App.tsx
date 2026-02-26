@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import BookDetailsPage from "./pages/BookDetailsPage";
-import LoginPage from "./pages/LoginPage";
-import ProfilePage from "./pages/ProfilePage";
+import HomePage from "./pages/Home/HomePage";
+import BookDetailsPage from "./pages/BookDetails/BookDetailsPage";
+import LoginPage from "./pages/Login/LoginPage";
+import ProfilePage from "./pages/Profile/ProfilePage";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";

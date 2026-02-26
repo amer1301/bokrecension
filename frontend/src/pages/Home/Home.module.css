@@ -117,3 +117,9 @@
   margin-top: 1rem;
   color: #d46a8c;
 }
+
+input:focus {
+  outline: none;
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(232, 191, 207, 0.3);
+}

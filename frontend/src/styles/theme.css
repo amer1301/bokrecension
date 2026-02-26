@@ -10,3 +10,15 @@
   --shadow-soft: 0 10px 30px rgba(232,191,207,0.15);
   --radius: 16px;
 }
+
+[data-theme="dark"] {
+  --color-bg: #111827;
+  --color-surface: #1f2937;
+  --color-primary: #3b82f6;
+  --color-accent: #374151;
+  --color-text: #f3f4f6;
+  --color-muted: #9ca3af;
+  --color-border: #374151;
+
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.4);
+}

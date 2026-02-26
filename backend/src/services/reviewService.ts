@@ -110,39 +110,18 @@ export const deleteReview = async (
    LIKE RECENSION
 ========================= */
 
-export const likeReview = async (
-  reviewId: string,
-  userId: string
-) => {
-  // Kontrollera att recensionen finns
-  const review = await prisma.review.findUnique({
-    where: { id: reviewId },
-  });
-
-  if (!review) {
-    throw { status: 404, message: "Recension hittades inte" };
+export const likeReview = async (reviewId: string, userId: string) => {
+  try {
+    await prisma.reviewLike.create({
+      data: { reviewId, userId },
+    });
+    return { message: "Gillad" };
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      throw { status: 400, message: "Redan gillad" };
+    }
+    throw error;
   }
-
-  // Kontrollera om redan gillad
-  const existing = await prisma.reviewLike.findFirst({
-    where: {
-      reviewId,
-      userId,
-    },
-  });
-
-  if (existing) {
-    throw { status: 400, message: "Recensionen är redan gillad" };
-  }
-
-  await prisma.reviewLike.create({
-    data: {
-      reviewId,
-      userId,
-    },
-  });
-
-  return { message: "Gillad" };
 };
 
 /* =========================
