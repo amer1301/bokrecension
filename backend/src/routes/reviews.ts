@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticate, AuthRequest } from "../middleware/authMiddleware";
+import { authenticate, authenticateOptional, AuthRequest } from "../middleware/authMiddleware";
 import * as reviewService from "../services/reviewService";
 import { createReviewSchema } from "../validation/reviewSchema";
 
@@ -35,28 +35,32 @@ router.post("/", authenticate, async (req: AuthRequest, res, next) => {
    HÄMTA RECENSIONER FÖR BOK
 ========================= */
 
-router.get("/:bookId", async (req: AuthRequest, res, next) => {
-  try {
-    const bookId = req.params.bookId as string;
-    const userId = req.userId ?? null;
+router.get(
+  "/:bookId",
+  authenticateOptional,
+  async (req: AuthRequest, res, next) => {
+    try {
+      const bookId = req.params.bookId as string;
+      const userId = req.userId ?? null;
 
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 5;
-    const sort = req.query.sort === "asc" ? "asc" : "desc";
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
+      const sort = req.query.sort === "asc" ? "asc" : "desc";
 
-    const result = await reviewService.getReviewsByBook(
-      bookId,
-      userId,
-      page,
-      limit,
-      sort
-    );
+      const result = await reviewService.getReviewsByBook(
+        bookId,
+        userId,
+        page,
+        limit,
+        sort
+      );
 
-    res.json(result);
-  } catch (error) {
-    next(error);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 /* =========================
    RADERA RECENSION (Protected)

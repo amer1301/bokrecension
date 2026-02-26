@@ -39,3 +39,30 @@ export const authenticate = (
     return res.sendStatus(403);
   }
 };
+
+export const authenticateOptional = (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return next(); // tillåt request utan token
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as { userId: string };
+
+    req.userId = decoded.userId;
+  } catch {
+    // ignorera ogiltig token
+  }
+
+  next();
+};

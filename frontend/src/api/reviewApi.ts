@@ -38,10 +38,16 @@ export async function getReviews(
   bookId: string,
   page: number = 1,
   limit: number = 5,
-  sort: "asc" | "desc" = "desc"
+  sort: "asc" | "desc" = "desc",
+  token?: string
 ): Promise<PaginatedReviews> {
   const response = await fetch(
-    `${API_URL}/reviews/${bookId}?page=${page}&limit=${limit}&sort=${sort}`
+    `${API_URL}/reviews/${bookId}?page=${page}&limit=${limit}&sort=${sort}`,
+    {
+      headers: token
+        ? { Authorization: `Bearer ${token}` }
+        : {},
+    }
   );
 
   if (!response.ok) {

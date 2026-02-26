@@ -48,7 +48,7 @@ export default function BookDetailsPage() {
     isLoading: loadingReviews,
   } = useQuery<PaginatedReviews>({
     queryKey: ["reviews", id, page, sort],
-    queryFn: () => getReviews(id!, page, 5, sort),
+    queryFn: () => getReviews(id!, page, 5, sort, token ?? undefined),
     enabled: !!id,
   });
 
