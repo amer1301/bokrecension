@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { errorHandler } from "./middleware/errorHandler";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use("/auth", authRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/reading-status", readingStatusRoutes);
 app.use("/users", usersRoutes);
+app.use(errorHandler);
 
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");

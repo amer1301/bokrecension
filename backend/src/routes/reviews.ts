@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { prisma } from "../prisma";
 import { authenticate, AuthRequest } from "../middleware/authMiddleware";
-
+import * as reviewService from "../services/reviewService";
+import { createReviewSchema } from "../validation/reviewSchema";
 
 const router = Router();
 
@@ -9,114 +9,122 @@ const router = Router();
    SKAPA RECENSION (Protected)
 ========================= */
 
-router.post("/", authenticate, async (req: AuthRequest, res) => {
-    const { bookId, text, rating } = req.body;
+router.post("/", authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.sendStatus(401);
+    }
 
-    if (!req.userId) return res.sendStatus(401);
+    const validated = createReviewSchema.parse(req.body);
 
-    const review = await prisma.review.create({
-        data: {
-            bookId,
-            text,
-            rating,
-            userId: req.userId,
-        },
-    });
+    const review = await reviewService.createReview(
+      req.userId,
+      validated.bookId,
+      validated.text,
+      validated.rating
+    );
 
-    res.json(review);
+    res.status(201).json(review);
+
+  } catch (error) {
+    next(error);
+  }
 });
 
 /* =========================
    HÄMTA RECENSIONER FÖR BOK
 ========================= */
 
-router.get("/:bookId", async (req: AuthRequest, res) => {
-  const bookId = req.params.bookId as string;
+router.get("/:bookId", async (req: AuthRequest, res, next) => {
+  try {
+    const bookId = req.params.bookId as string;
+    const userId = req.userId ?? null;
 
-  const reviews = await prisma.review.findMany({
-    where: { bookId },
-    include: {
-      user: true,
-      likes: true,
-    },
-  });
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const sort = req.query.sort === "asc" ? "asc" : "desc";
 
-  const userId = req.userId ?? null;
+    const result = await reviewService.getReviewsByBook(
+      bookId,
+      userId,
+      page,
+      limit,
+      sort
+    );
 
-  const formatted = reviews.map((review) => ({
-    ...review,
-    likesCount: review.likes.length,
-    isLikedByUser: userId
-      ? review.likes.some((like) => like.userId === userId)
-      : false,
-  }));
-
-  res.json(formatted);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
 });
 
 /* =========================
    RADERA RECENSION (Protected)
 ========================= */
 
-router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
-    const id = req.params.id as string;
+router.delete("/:id", authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.sendStatus(401);
+    }
 
-    const review = await prisma.review.findUnique({ where: { id } });
+    const reviewId = req.params.id as string;
 
-    if (!review) return res.sendStatus(404);
-    if (review.userId !== req.userId) return res.sendStatus(403);
+const result = await reviewService.deleteReview(
+  reviewId,
+  req.userId
+);
 
-    await prisma.review.delete({ where: { id }});
-
-    res.json({ message: "Recension borttagen" });
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
 });
 
 /* =========================
    LIKE RECENSION (Protected)
 ========================= */
 
-router.post("/:id/like", authenticate, async (req: AuthRequest, res) => {
-  const reviewId = req.params.id as string;
+router.post("/:id/like", authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.sendStatus(401);
+    }
 
-  if (!req.userId) return res.sendStatus(401);
+    const reviewId = req.params.id as string;
 
-  // Kontrollera om redan gillad
-  const existing = await prisma.reviewLike.findFirst({
-    where: {
-      reviewId,
-      userId: req.userId,
-    },
-  });
+const result = await reviewService.deleteReview(
+  reviewId,
+  req.userId
+);
 
-  if (existing) return res.status(400).json({ message: "Redan gillad" });
-
-  await prisma.reviewLike.create({
-    data: {
-      reviewId,
-      userId: req.userId,
-    },
-  });
-
-  res.json({ message: "Gillad" });
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
 });
 
 /* =========================
    TA BORT LIKE (Protected)
 ========================= */
 
-router.delete("/:id/like", authenticate, async (req: AuthRequest, res) => {
-  const reviewId = req.params.id as string;
+router.delete("/:id/like", authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.sendStatus(401);
+    }
 
-  if (!req.userId) return res.sendStatus(401);
+    const reviewId = req.params.id as string;
 
-  await prisma.reviewLike.deleteMany({
-    where: {
-      reviewId,
-      userId: req.userId,
-    },
-  });
+const result = await reviewService.deleteReview(
+  reviewId,
+  req.userId
+);
 
-  res.json({ message: "Like borttagen" });
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;
