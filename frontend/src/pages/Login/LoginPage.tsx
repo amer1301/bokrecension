@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./Login.module.css";
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -85,6 +86,9 @@ return (
           {error}
         </p>
       )}
+      <p className={styles.registerText}>
+        Har du inget konto? <Link to="/register">Registrera dig här</Link>
+      </p>
     </div>
   </div>
 );

@@ -6,6 +6,7 @@ import ProfilePage from "./pages/Profile/ProfilePage";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
+import RegisterPage from "./pages/Register/RegisterPage";
 
 export default function App() {
   const { isAuthenticated, logout } = useAuth();
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/book/:id" element={<BookDetailsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/profil" element={<ProfilePage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </div>
       <Footer />

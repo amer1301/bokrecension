@@ -1,0 +1,85 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "./Register.module.css";
+import { Link } from "react-router-dom";
+
+export default function RegisterPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  setLoading(true);
+  setError(null);
+
+  try {
+    const response = await fetch("http://localhost:3000/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Registrering misslyckades");
+    }
+
+    navigate("/login");
+
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Ett fel uppstod");
+  } finally {
+    setLoading(false);
+  }
+};
+
+return (
+  <div className={styles.wrapper}>
+    <div className={styles.card}>
+      <h1>Registrera</h1>
+
+      <form onSubmit={handleRegister}>
+        <div className={styles.inputGroup}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className={styles.inputGroup}>
+          <input
+            type="password"
+            placeholder="Lösenord"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          className={styles.button}
+          disabled={loading}
+        >
+          {loading ? "Skapar konto..." : "Registrera"}
+        </button>
+      </form>
+
+      {error && <p className={styles.error}>{error}</p>}
+
+      <p className={styles.loginText}>
+        Har du redan konto? <Link to="/login">Logga in</Link>
+      </p>
+    </div>
+  </div>
+);
+}
