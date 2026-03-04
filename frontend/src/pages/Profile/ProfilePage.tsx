@@ -23,14 +23,17 @@ export default function ProfilePage() {
     atob(token.split(".")[1])
   ).userId;
 
-  const { data, isLoading } = useQuery<ProfileStats>({
-    queryKey: ["profileStats"],
+  const { data, isLoading, isError } = useQuery<ProfileStats>({
+    queryKey: ["profileStats", userId],
     queryFn: async () => {
       const res = await fetch(
         `http://localhost:3000/users/${userId}/stats`
       );
-      if (!res.ok)
+
+      if (!res.ok) {
         throw new Error("Kunde inte hämta statistik");
+      }
+
       return res.json();
     },
   });
@@ -39,6 +42,14 @@ export default function ProfilePage() {
     return (
       <div className={styles.centerMessage}>
         <p>Laddar...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className={styles.centerMessage}>
+        <p>Något gick fel.</p>
       </div>
     );
   }

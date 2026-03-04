@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Register.module.css";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -30,10 +31,16 @@ const handleRegister = async (e: React.FormEvent) => {
       throw new Error(data.error || "Registrering misslyckades");
     }
 
+    toast.success("Konto skapat! Du kan nu logga in.");
     navigate("/login");
 
   } catch (err) {
-    setError(err instanceof Error ? err.message : "Ett fel uppstod");
+  const message =
+    err instanceof Error ? err.message : "Ett fel uppstod";
+  setError(message);
+
+    toast.error(message);
+
   } finally {
     setLoading(false);
   }

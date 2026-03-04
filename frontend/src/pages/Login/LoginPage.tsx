@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./Login.module.css";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -37,14 +38,24 @@ export default function LoginPage() {
             //Spara token
             login(data.token);
 
+            //Visa toast
+            toast.success("Inloggad!");
+
             //Navigera till startsidan
             navigate("/");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Ett fel uppstod");
-        } finally {
-            setLoading(false);
-        }
-    };
+
+        const message =
+            err instanceof Error ? err.message : "Ett fel uppstod";
+
+        setError(message);
+
+        toast.error(message);
+
+    } finally {
+        setLoading(false);
+    }
+};
 
 return (
   <div className={styles.wrapper}>

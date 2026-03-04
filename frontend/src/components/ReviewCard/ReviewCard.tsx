@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "./ReviewCard.module.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 type Review = {
   id: string;
@@ -39,25 +40,37 @@ export default function ReviewCard({
   const [rating, setRating] = useState(review.rating);
 
   const handleSave = () => {
-    if (!text.trim()) return;
+  if (!text.trim()) {
+  toast.error("Recensionen kan inte vara tom");
+  return;
+}
 
-    onUpdate(review.id, text, rating);
-    setEditing(false);
-  };
+  onUpdate(review.id, text, rating);
+
+  toast.success("Recension uppdaterad ✏️");
+
+  setEditing(false);
+};
 
   return (
   <div className={styles.reviewCard}>
 
-    {/* ❤️ Heart (absolut positionerad) */}
+    {/* Heart (absolut positionerad) */}
     {isAuthenticated && (
       <button
         className={`${styles.heartButton} ${
           review.isLikedByUser ? styles.liked : ""
         }`}
         disabled={isLikeLoading}
-        onClick={() =>
-          onToggleLike(review.id, review.isLikedByUser)
-        }
+        onClick={() => {
+  onToggleLike(review.id, review.isLikedByUser);
+
+  if (review.isLikedByUser) {
+    toast("Like borttagen");
+  } else {
+    toast.success("Du gillade recensionen ❤️");
+  }
+}}
       >
         {review.isLikedByUser ? <FaHeart /> : <FaRegHeart />}
         <span>{review.likesCount}</span>
@@ -132,7 +145,10 @@ export default function ReviewCard({
             </button>
 
             <button
-              onClick={() => onDelete(review.id)}
+              onClick={() => {
+  onDelete(review.id);
+  toast.success("Recension borttagen");
+}}
               className={styles.deleteButton}
             >
               Ta bort
