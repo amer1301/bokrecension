@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { prisma } from "../prisma";
 import { authenticate, authenticateOptional, AuthRequest } from "../middleware/authMiddleware";
 import * as reviewService from "../services/reviewService";
 import { createReviewSchema } from "../validation/reviewSchema";
@@ -124,6 +125,32 @@ router.delete("/:id/like", authenticate, async (req: AuthRequest, res, next) => 
     res.json(result);
   } catch (error) {
     next(error);
+  }
+});
+
+router.put("/:id", async (req, res) => {
+  const reviewId = req.params.id;
+  const { text, rating } = req.body;
+
+  try {
+    const updatedReview = await prisma.review.update({
+      where: {
+        id: reviewId
+      },
+      data: {
+        text,
+        rating
+      }
+    });
+
+    res.json(updatedReview);
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(404).json({
+      message: "Review not found"
+    });
   }
 });
 export default router;

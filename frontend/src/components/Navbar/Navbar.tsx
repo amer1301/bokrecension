@@ -11,10 +11,10 @@ interface Props {
 export default function Navbar({ isAuthenticated, logout }: Props) {
   return (
     <nav className={styles.navbar}>
-      <div className={styles.logo}>
+      <Link to="/" className={styles.logo}>
   <img src={cuteIcon} alt="Cute icon" className={styles.icon} />
   Bokrecensioner
-</div>
+</Link>
 
       <div className={styles.links}>
         <Link to="/">Hem</Link>

@@ -11,6 +11,8 @@ model User {
   id              String          @id @default(uuid())
   email           String          @unique
   password        String
+  username        String?         @unique
+  avatarUrl       String?
   reviews         Review[]
   readingStatuses ReadingStatus[]
   likes           ReviewLike[]

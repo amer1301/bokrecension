@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import RegisterPage from "./pages/Register/RegisterPage";
 import UserProfilePage from "./pages/UserProfile/UserProfilePage";
+import EditProfilePage from "./pages/EditProfile/EditProfilePage";
 
 export default function App() {
   const { isAuthenticated, logout } = useAuth();
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/profil" element={<ProfilePage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/user/:id" element={<UserProfilePage />} />
+          <Route path="/edit-profile" element={<EditProfilePage />} />
         </Routes>
       </div>
       <Footer />

@@ -3,12 +3,23 @@ import { prisma } from "../prisma";
 
 const router = Router();
 
-router.get("/:userId/stats", async (req: Request, res: Response) => {
+/* =========================
+   GET USER
+========================= */
+
+router.get("/:userId", async (req: Request, res: Response) => {
   const userId = req.params.userId as string;
 
   try {
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        avatarUrl: true,
+        email: true,
+      },
     });
 
     if (!user) {
@@ -16,6 +27,30 @@ router.get("/:userId/stats", async (req: Request, res: Response) => {
         message: "User not found",
       });
     }
+
+    res.json(user);
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Could not fetch user",
+    });
+
+  }
+});
+
+
+/* =========================
+   USER STATS
+========================= */
+
+router.get("/:userId/stats", async (req: Request, res: Response) => {
+
+  const userId = req.params.userId as string;
+
+  try {
 
     const reviews = await prisma.review.findMany({
       where: { userId },
@@ -45,12 +80,15 @@ router.get("/:userId/stats", async (req: Request, res: Response) => {
     });
 
   } catch (error) {
+
     console.error(error);
 
     res.status(500).json({
       message: "Kunde inte hämta statistik",
     });
+
   }
+
 });
 
 
@@ -59,6 +97,7 @@ router.get("/:userId/stats", async (req: Request, res: Response) => {
 ========================= */
 
 router.post("/:userId/follow", async (req: Request, res: Response) => {
+
   const followerId = req.body.followerId as string;
   const followingId = req.params.userId as string;
 
@@ -67,15 +106,22 @@ router.post("/:userId/follow", async (req: Request, res: Response) => {
     await prisma.follow.create({
       data: {
         followerId,
-        followingId
-      }
+        followingId,
+      },
     });
 
-    res.json({ message: "User followed" });
+    res.json({
+      message: "User followed",
+    });
 
   } catch (error) {
-    res.status(400).json({ message: "Already following" });
+
+    res.status(400).json({
+      message: "Already following",
+    });
+
   }
+
 });
 
 
@@ -94,17 +140,19 @@ router.delete("/:userId/follow", async (req: Request, res: Response) => {
       where: {
         followerId_followingId: {
           followerId,
-          followingId
-        }
-      }
+          followingId,
+        },
+      },
     });
 
-    res.json({ message: "User unfollowed" });
+    res.json({
+      message: "User unfollowed",
+    });
 
   } catch (error) {
 
     res.status(400).json({
-      message: "Follow relationship not found"
+      message: "Follow relationship not found",
     });
 
   }
@@ -116,23 +164,118 @@ router.delete("/:userId/follow", async (req: Request, res: Response) => {
    CHECK FOLLOW STATUS
 ========================= */
 
-router.get("/:userId/follow-status/:followerId", async (req: Request, res: Response) => {
+router.get(
+  "/:userId/follow-status/:followerId",
+  async (req: Request, res: Response) => {
+
+    const userId = req.params.userId as string;
+    const followerId = req.params.followerId as string;
+
+    const follow = await prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId: userId,
+        },
+      },
+    });
+
+    res.json({
+      isFollowing: !!follow,
+    });
+
+  }
+);
+
+
+/* =========================
+   UPDATE PROFILE
+========================= */
+
+router.patch("/:userId", async (req: Request, res: Response) => {
 
   const userId = req.params.userId as string;
-  const followerId = req.params.followerId as string;
+  const { username, avatarUrl } = req.body;
 
-  const follow = await prisma.follow.findUnique({
-    where: {
-      followerId_followingId: {
-        followerId,
-        followingId: userId
-      }
-    }
-  });
+  try {
 
-  res.json({
-    isFollowing: !!follow
-  });
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        username,
+        avatarUrl,
+      },
+    });
+
+    res.json(updatedUser);
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Kunde inte uppdatera användare",
+    });
+
+  }
+
+});
+
+
+/* =========================
+   FOLLOWERS / FOLLOWING
+========================= */
+
+router.get("/:userId/follows", async (req: Request, res: Response) => {
+
+  const userId = req.params.userId as string;
+
+  try {
+
+    const followers = await prisma.follow.findMany({
+      where: {
+        followingId: userId,
+      },
+      select: {
+        follower: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    const following = await prisma.follow.findMany({
+      where: {
+        followerId: userId,
+      },
+      select: {
+        following: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    res.json({
+      followers: followers.map((f) => f.follower),
+      following: following.map((f) => f.following),
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Could not fetch follow data",
+    });
+
+  }
 
 });
 

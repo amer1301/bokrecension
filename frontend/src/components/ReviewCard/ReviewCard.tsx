@@ -116,18 +116,18 @@ export default function ReviewCard({
 
         <div className={styles.actions}>
           <button
-            onClick={handleSave}
-            className={styles.saveButton}
-          >
-            Spara
-          </button>
+  onClick={handleSave}
+  className="outlineButton"
+>
+  Spara
+</button>
 
-          <button
-            onClick={() => setEditing(false)}
-            className={styles.cancelButton}
-          >
-            Avbryt
-          </button>
+<button
+  onClick={() => setEditing(false)}
+  className="outlineButton"
+>
+  Avbryt
+</button>
         </div>
       </>
     ) : (
