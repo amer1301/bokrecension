@@ -181,7 +181,12 @@ export default function HomePage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button onClick={searchBooks}>Sök</button>
+        <button
+    onClick={searchBooks}
+    className="outlineButton"
+  >
+    Sök
+  </button>
       </div>
 
       {loading && <p className={styles.message}>Laddar...</p>}

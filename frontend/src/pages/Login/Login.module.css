@@ -44,7 +44,7 @@
   padding: 0.9rem;
   border: none;
   border-radius: 12px;
-  background: #e8bfcf;
+  background-color: var(--color-button);
   color: white;
   font-weight: 500;
   cursor: pointer;
@@ -62,3 +62,15 @@
   text-align: center;
 }
 
+.registerText {
+  margin-top: 1em;
+}
+
+.registerText a {
+  text-decoration: underline;
+  color: var(--color-button);
+}
+
+.registerText a:hover {
+  opacity: 0.8;
+}

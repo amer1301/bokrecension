@@ -1,5 +1,5 @@
 .wrapper {
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -17,17 +17,19 @@
 }
 
 .card h1 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   color: var(--color-text);
 }
 
+/* INPUTS */
+
 .inputGroup {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .inputGroup input {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.85rem 1rem;
   border-radius: var(--radius);
   border: 1px solid var(--color-input-border);
   background-color: var(--color-input-bg);
@@ -38,19 +40,21 @@
 
 .inputGroup input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-button);
 }
+
+/* BUTTON */
 
 .button {
   width: 100%;
-  padding: 0.75rem;
-  border-radius: var(--radius);
+  padding: 0.9rem;
   border: none;
+  border-radius: 12px;
   background-color: var(--color-button);
-  color: var(--color-button-text);
-  font-weight: 600;
+  color: white;
+  font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: 0.2s ease;
 }
 
 .button:hover {
@@ -62,24 +66,27 @@
   cursor: not-allowed;
 }
 
+/* ERROR */
+
 .error {
   margin-top: 1rem;
   color: #dc2626;
   font-size: 0.9rem;
 }
 
+/* LOGIN LINK */
+
 .loginText {
-  margin-top: 1.2rem;
-  font-size: 0.9rem;
-  color: var(--color-muted);
+  margin-top: 1.4rem;
+  font-size: 0.95rem;
+  color: var(--color-text);
 }
 
 .loginText a {
   color: var(--color-button);
-  text-decoration: none;
-  font-weight: 500;
+  text-decoration: underline;
 }
 
 .loginText a:hover {
-  text-decoration: underline;
+  opacity: 0.8;
 }
