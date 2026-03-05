@@ -2,6 +2,7 @@ import { useState } from "react";
 import styles from "./ReviewCard.module.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 type Review = {
   id: string;
@@ -80,9 +81,12 @@ export default function ReviewCard({
     {/* ===== HEADER ===== */}
     <div className={styles.header}>
       <div>
-        <span className={styles.username}>
-          {review.user?.username ?? "Okänd användare"}
-        </span>
+        <Link
+  to={`/user/${review.user?.id}`}
+  className={styles.username}
+>
+  {review.user?.username ?? "Okänd användare"}
+</Link>
         <div className={styles.date}>
           {new Date(review.createdAt).toLocaleDateString()}
         </div>

@@ -80,6 +80,21 @@ a {
   font-size: 0.9rem;
 }
 
+.outlineButton {
+  background: transparent;
+  border: 1px solid var(--color-button);
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  color: var(--color-button);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.outlineButton:hover {
+  background: var(--color-button);
+  color: var(--color-button-text);
+}
 .book-header h1 {
   margin-bottom: 1rem;
 }

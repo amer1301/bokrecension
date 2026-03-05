@@ -19,9 +19,8 @@ export default function ProfilePage() {
     );
   }
 
-  const userId = JSON.parse(
-    atob(token.split(".")[1])
-  ).userId;
+  const decoded = JSON.parse(atob(token.split(".")[1]));
+  const userId = decoded.userId;
 
   const { data, isLoading, isError } = useQuery<ProfileStats>({
     queryKey: ["profileStats", userId],

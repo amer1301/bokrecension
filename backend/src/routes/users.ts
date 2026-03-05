@@ -7,8 +7,6 @@ router.get("/:userId/stats", async (req: Request, res: Response) => {
   const userId = req.params.userId as string;
 
   try {
-
-    // kontrollera att användaren finns
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -19,9 +17,8 @@ router.get("/:userId/stats", async (req: Request, res: Response) => {
       });
     }
 
-    // hämta recensioner + likes
     const reviews = await prisma.review.findMany({
-      where: { userId: userId },
+      where: { userId },
       include: {
         likes: true,
       },
@@ -54,6 +51,89 @@ router.get("/:userId/stats", async (req: Request, res: Response) => {
       message: "Kunde inte hämta statistik",
     });
   }
+});
+
+
+/* =========================
+   FOLLOW USER
+========================= */
+
+router.post("/:userId/follow", async (req: Request, res: Response) => {
+  const followerId = req.body.followerId as string;
+  const followingId = req.params.userId as string;
+
+  try {
+
+    await prisma.follow.create({
+      data: {
+        followerId,
+        followingId
+      }
+    });
+
+    res.json({ message: "User followed" });
+
+  } catch (error) {
+    res.status(400).json({ message: "Already following" });
+  }
+});
+
+
+/* =========================
+   UNFOLLOW USER
+========================= */
+
+router.delete("/:userId/follow", async (req: Request, res: Response) => {
+
+  const followerId = req.body.followerId as string;
+  const followingId = req.params.userId as string;
+
+  try {
+
+    await prisma.follow.delete({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId
+        }
+      }
+    });
+
+    res.json({ message: "User unfollowed" });
+
+  } catch (error) {
+
+    res.status(400).json({
+      message: "Follow relationship not found"
+    });
+
+  }
+
+});
+
+
+/* =========================
+   CHECK FOLLOW STATUS
+========================= */
+
+router.get("/:userId/follow-status/:followerId", async (req: Request, res: Response) => {
+
+  const userId = req.params.userId as string;
+  const followerId = req.params.followerId as string;
+
+  const follow = await prisma.follow.findUnique({
+    where: {
+      followerId_followingId: {
+        followerId,
+        followingId: userId
+      }
+    }
+  });
+
+  res.json({
+    isFollowing: !!follow
+  });
+
 });
 
 export default router;

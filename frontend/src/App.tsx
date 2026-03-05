@@ -7,6 +7,7 @@ import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import RegisterPage from "./pages/Register/RegisterPage";
+import UserProfilePage from "./pages/UserProfile/UserProfilePage";
 
 export default function App() {
   const { isAuthenticated, logout } = useAuth();
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/profil" element={<ProfilePage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/user/:id" element={<UserProfilePage />} />
         </Routes>
       </div>
       <Footer />
