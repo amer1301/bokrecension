@@ -6,6 +6,11 @@
   background-color: var(--color-bg);
 }
 
+.form {
+  max-width: 400px;
+  margin: auto;
+}
+
 .card {
   background-color: var(--color-surface);
   padding: 2.5rem;
@@ -20,8 +25,6 @@
   margin-bottom: 2rem;
   color: var(--color-text);
 }
-
-/* INPUTS */
 
 .inputGroup {
   margin-bottom: 1.25rem;
@@ -42,8 +45,6 @@
   outline: none;
   border-color: var(--color-button);
 }
-
-/* BUTTON */
 
 .button {
   width: 100%;
@@ -66,15 +67,11 @@
   cursor: not-allowed;
 }
 
-/* ERROR */
-
 .error {
   margin-top: 1rem;
   color: #dc2626;
   font-size: 0.9rem;
 }
-
-/* LOGIN LINK */
 
 .loginText {
   margin-top: 1.4rem;
@@ -89,4 +86,12 @@
 
 .loginText a:hover {
   opacity: 0.8;
+}
+
+@media (max-width: 480px) {
+
+  .form {
+    max-width: 100%;
+  }
+
 }

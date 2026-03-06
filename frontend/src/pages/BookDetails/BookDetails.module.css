@@ -8,6 +8,11 @@
   margin-bottom: 2rem;
 }
 
+.bookLayout {
+  display: flex;
+  gap: 3rem;
+}
+
 .title {
   margin-bottom: 1rem;
   text-align: center;
@@ -106,4 +111,13 @@ background: transparent;
 .submitButton:hover {
   background-color: var(--color-button);
   color: white;
+}
+
+@media (max-width: 768px) {
+
+  .bookLayout {
+    flex-direction: column;
+    align-items: center;
+  }
+
 }

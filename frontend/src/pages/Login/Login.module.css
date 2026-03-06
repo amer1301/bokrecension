@@ -74,3 +74,11 @@
 .registerText a:hover {
   opacity: 0.8;
 }
+
+@media (max-width: 480px) {
+
+  .form {
+    max-width: 100%;
+  }
+
+}

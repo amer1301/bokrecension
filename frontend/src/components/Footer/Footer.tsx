@@ -14,6 +14,7 @@ export default function Footer() {
       >
         Cute icons created by Freepik - Flaticon
       </a>
+      <p>© Amanda Persdotter 2026</p>
     </footer>
   );
 }

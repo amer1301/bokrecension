@@ -7,6 +7,8 @@
   transition: transform 0.2s ease;
   width: 100%;
   max-width: 250px;
+  display: flex;
+  gap: 1rem;
 }
 
 .card:hover {
@@ -26,4 +28,13 @@
 
 .rating {
   font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+
+  .card {
+    flex-direction: column;
+    text-align: center;
+  }
+
 }

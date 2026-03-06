@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Navbar.module.css";
 import cuteIcon from "../../assets/cat.png";
@@ -9,26 +10,52 @@ interface Props {
 }
 
 export default function Navbar({ isAuthenticated, logout }: Props) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <nav className={styles.navbar}>
+      {menuOpen && <div className={styles.overlay} onClick={() => setMenuOpen(false)} />}
       <Link to="/" className={styles.logo}>
-  <img src={cuteIcon} alt="Cute icon" className={styles.icon} />
-  Bokrecensioner
-</Link>
+        <img src={cuteIcon} alt="Cute icon" className={styles.icon} />
+        Bokrecensioner
+      </Link>
 
-      <div className={styles.links}>
-        <Link to="/">Hem</Link>
-        <Link to="/profil">Min profil</Link>
-        <ThemeToggle />
+<button
+  className={styles.hamburger}
+  onClick={() => setMenuOpen(!menuOpen)}
+>
+  {menuOpen ? "✕" : "☰"}
+</button>
 
-        {!isAuthenticated && <Link to="/login">Logga in</Link>}
+<div className={`${styles.links} ${menuOpen ? styles.open : ""}`}>
+  <Link to="/" onClick={() => setMenuOpen(false)}>
+    Hem
+  </Link>
 
-        {isAuthenticated && (
-          <button onClick={logout} className={styles.logoutButton}>
-            Logga ut
-          </button>
-        )}
-      </div>
+  <Link to="/profil" onClick={() => setMenuOpen(false)}>
+    Min profil
+  </Link>
+
+  <ThemeToggle />
+
+  {!isAuthenticated && (
+    <Link to="/login" onClick={() => setMenuOpen(false)}>
+      Logga in
+    </Link>
+  )}
+
+  {isAuthenticated && (
+    <button
+      onClick={() => {
+        logout();
+        setMenuOpen(false);
+      }}
+      className={styles.logoutButton}
+    >
+      Logga ut
+    </button>
+  )}
+</div>
     </nav>
   );
 }

@@ -147,6 +147,14 @@ margin-bottom: 1em;
   font-family: 'DM Sans', sans-serif;
 }
 
+@media (max-width: 480px) {
+
+  .reviewCard {
+    padding: 1rem;
+  }
+
+}
+
 /* Pop keyframes */
 @keyframes pop {
   0% {

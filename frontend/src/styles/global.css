@@ -156,9 +156,35 @@ a {
   min-width: 0;
 }
 
-/* Mobile breakpoints */
-@media (max-width: 1024px) { /* Tablet */ }
+/* Breakpoints */
+:root {
+  --mobile: 480px;
+  --tablet: 768px;
+  --laptop: 1024px;
+  --desktop: 1280px;
+}
 
-@media (max-width: 768px) { /* Mobile */ }
+/* Container system */
 
-@media (max-width: 480px) { /* Small mobile */ }
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 3rem;
+}
+
+/* Tablet */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 2rem;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1.5rem;
+  }
+}
