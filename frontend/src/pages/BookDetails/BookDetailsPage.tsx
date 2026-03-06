@@ -6,7 +6,7 @@ import styles from "./BookDetails.module.css";
 import RatingSummary from "../../components/RatingSummary/RatingSummary";
 import ReviewCard from "../../components/ReviewCard/ReviewCard";
 import ReadingStatusSection from "../../components/ReadingStatus/ReadingStatusSection";
-
+import Spinner from "../../components/Spinner/Spinner";
 import { getBookDetails } from "../../api/bookApi";
 import {
   getReviews,
@@ -43,15 +43,18 @@ export default function BookDetailsPage() {
     enabled: !!id,
   });
 
-  const {
-    data: reviewData,
-    isLoading: loadingReviews,
-  } = useQuery<PaginatedReviews>({
-    queryKey: ["reviews", id, page, sort],
-    queryFn: () => getReviews(id!, page, 5, sort, token ?? undefined),
-    enabled: !!id,
-  });
+const {
+  data: reviewData,
+  isLoading: loadingReviews,
+} = useQuery<PaginatedReviews>({
+  queryKey: ["reviews", id, page, sort],
+  queryFn: () => getReviews(id!, page, 5, sort, token ?? undefined),
+  enabled: !!id,
+});
 
+if (loadingBook || loadingReviews) {
+  return <Spinner />;
+}
   const reviews = reviewData?.reviews ?? [];
   const totalPages = reviewData?.pagination.totalPages ?? 1;
 

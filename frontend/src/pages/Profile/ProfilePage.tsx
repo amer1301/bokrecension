@@ -2,6 +2,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./Profile.module.css";
 import { Link } from "react-router-dom";
+import Spinner from "../../components/Spinner/Spinner";
 
 import {
   getUser,
@@ -50,7 +51,10 @@ export default function ProfilePage() {
      USER
   ======================== */
 
-  const { data: user } = useQuery<User>({
+  const {
+    data: user,
+    isLoading: loadingUser,
+  } = useQuery<User>({
     queryKey: ["user", userId],
     queryFn: () => getUser(userId),
   });
@@ -61,7 +65,7 @@ export default function ProfilePage() {
 
   const {
     data: stats,
-    isLoading,
+    isLoading: loadingStats,
     isError,
   } = useQuery<ProfileStats>({
     queryKey: ["profileStats", userId],
@@ -72,7 +76,10 @@ export default function ProfilePage() {
      FOLLOWS
   ======================== */
 
-  const { data: follows } = useQuery<FollowData>({
+  const {
+    data: follows,
+    isLoading: loadingFollows,
+  } = useQuery<FollowData>({
     queryKey: ["follows", userId],
     queryFn: () => getFollows(userId),
   });
@@ -81,12 +88,10 @@ export default function ProfilePage() {
      LOADING
   ======================== */
 
+  const isLoading = loadingUser || loadingStats || loadingFollows;
+
   if (isLoading) {
-    return (
-      <div className={styles.centerMessage}>
-        <p>Laddar...</p>
-      </div>
-    );
+    return <Spinner />;
   }
 
   if (isError || !stats) {
@@ -107,16 +112,19 @@ export default function ProfilePage() {
         <h1>Min profil</h1>
       </div>
 
+      {/* Avatar */}
       <img
         src={user?.avatarUrl ?? "/default-avatar.png"}
         alt="Profilbild"
         className={styles.avatar}
       />
 
+      {/* Username */}
       <h2 className={styles.username}>
         {user?.username ?? "Användare"}
       </h2>
 
+      {/* Stats */}
       <div className={styles.stats}>
         <div className={styles.statCard}>
           <h2>{stats.totalReviews}</h2>
@@ -134,36 +142,48 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* FOLLOW SECTION */}
       <div className={styles.followSection}>
         <h3>Följer ({follows?.following.length ?? 0})</h3>
 
-        <div className={styles.followList}>
-          {follows?.following.map((user) => (
-            <div key={user.id} className={styles.followUser}>
-              <img
-                src={user.avatarUrl ?? "/default-avatar.png"}
-                className={styles.followAvatar}
-              />
-              <p>{user.username ?? "Användare"}</p>
-            </div>
-          ))}
-        </div>
+        {follows?.following.length === 0 ? (
+          <p>Du följer inga användare ännu.</p>
+        ) : (
+          <div className={styles.followList}>
+            {follows?.following.map((user) => (
+              <div key={user.id} className={styles.followUser}>
+                <img
+                  src={user.avatarUrl ?? "/default-avatar.png"}
+                  className={styles.followAvatar}
+                  alt="avatar"
+                />
+                <p>{user.username ?? "Användare"}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         <h3>Följare ({follows?.followers.length ?? 0})</h3>
 
-        <div className={styles.followList}>
-          {follows?.followers.map((user) => (
-            <div key={user.id} className={styles.followUser}>
-              <img
-                src={user.avatarUrl ?? "/default-avatar.png"}
-                className={styles.followAvatar}
-              />
-              <p>{user.username ?? "Användare"}</p>
-            </div>
-          ))}
-        </div>
+        {follows?.followers.length === 0 ? (
+          <p>Du har inga följare ännu.</p>
+        ) : (
+          <div className={styles.followList}>
+            {follows?.followers.map((user) => (
+              <div key={user.id} className={styles.followUser}>
+                <img
+                  src={user.avatarUrl ?? "/default-avatar.png"}
+                  className={styles.followAvatar}
+                  alt="avatar"
+                />
+                <p>{user.username ?? "Användare"}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* EDIT PROFILE */}
       <div className={styles.editWrapper}>
         <Link to="/edit-profile">
           <button className="outlineButton">
