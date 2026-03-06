@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import styles from "./Navbar.module.css";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Props {
   isAuthenticated: boolean;
@@ -10,7 +10,7 @@ interface Props {
 
 export default function Navbar({ isAuthenticated, logout }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
-
+const navigate = useNavigate();
   return (
     <nav className={styles.navbar}>
       {menuOpen && <div className={styles.overlay} onClick={() => setMenuOpen(false)} />}
@@ -44,15 +44,16 @@ export default function Navbar({ isAuthenticated, logout }: Props) {
   )}
 
   {isAuthenticated && (
-    <button
-      onClick={() => {
-        logout();
-        setMenuOpen(false);
-      }}
-      className={styles.logoutButton}
-    >
-      Logga ut
-    </button>
+<button
+  onClick={() => {
+    logout();
+    navigate("/login");
+    setMenuOpen(false);
+  }}
+  className={styles.logoutButton}
+>
+  Logga ut
+</button>
   )}
 </div>
     </nav>
