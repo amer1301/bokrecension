@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Navbar.module.css";
-import cuteIcon from "../../assets/cat.png";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
 
 interface Props {
@@ -16,7 +15,7 @@ export default function Navbar({ isAuthenticated, logout }: Props) {
     <nav className={styles.navbar}>
       {menuOpen && <div className={styles.overlay} onClick={() => setMenuOpen(false)} />}
       <Link to="/" className={styles.logo}>
-        <img src={cuteIcon} alt="Cute icon" className={styles.icon} />
+        <img src="/cat.png" className={styles.icon} alt="logo" />
         Bokrecensioner
       </Link>
 
