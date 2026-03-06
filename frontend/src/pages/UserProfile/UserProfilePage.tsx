@@ -11,6 +11,11 @@ import {
   getFollowStatus,
 } from "../../api/followApi";
 
+import {
+  getUser,
+  getUserStats,
+} from "../../api/userApi";
+
 type ProfileStats = {
   totalReviews: number;
   avgRating: number;
@@ -37,50 +42,30 @@ export default function UserProfilePage() {
     return <p>Användare saknas</p>;
   }
 
-  const myUserId = JSON.parse(
-    atob(token.split(".")[1])
-  ).userId;
+  const myUserId = JSON.parse(atob(token.split(".")[1])).userId;
 
   /* =========================
-     HÄMTA USER DATA
+     USER DATA
   ========================= */
 
-  const { data: user, isLoading: userLoading } = useQuery<User>({
-    queryKey: ["user", id],
-    queryFn: async () => {
-      const res = await fetch(
-        `http://localhost:3000/users/${id}`
-      );
-
-      if (!res.ok) {
-        throw new Error("Kunde inte hämta användare");
-      }
-
-      return res.json();
-    },
-  });
+  const { data: user, isLoading: userLoading } =
+    useQuery<User>({
+      queryKey: ["user", id],
+      queryFn: () => getUser(id),
+    });
 
   /* =========================
-     HÄMTA STATS
+     STATS
   ========================= */
 
-  const { data, isLoading } = useQuery<ProfileStats>({
-    queryKey: ["userStats", id],
-    queryFn: async () => {
-      const res = await fetch(
-        `http://localhost:3000/users/${id}/stats`
-      );
-
-      if (!res.ok) {
-        throw new Error("Kunde inte hämta statistik");
-      }
-
-      return res.json();
-    },
-  });
+  const { data: stats, isLoading: statsLoading } =
+    useQuery<ProfileStats>({
+      queryKey: ["userStats", id],
+      queryFn: () => getUserStats(id),
+    });
 
   /* =========================
-     CHECK FOLLOW STATUS
+     FOLLOW STATUS
   ========================= */
 
   useEffect(() => {
@@ -120,11 +105,11 @@ export default function UserProfilePage() {
      LOADING
   ========================= */
 
-  if (isLoading || userLoading) {
+  if (userLoading || statsLoading) {
     return <p>Laddar...</p>;
   }
 
-  if (!data) {
+  if (!stats) {
     return <p>Ingen data</p>;
   }
 
@@ -135,41 +120,36 @@ export default function UserProfilePage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-      <h1>Användarprofil</h1>
-</div>
-      {/* Avatar */}
+        <h1>Användarprofil</h1>
+      </div>
+
       <img
         src={user?.avatarUrl ?? "/default-avatar.png"}
         alt="Profilbild"
         className={styles.avatar}
       />
 
-      {/* Username */}
       <h2 className={styles.username}>
         {user?.username ?? "Användare"}
       </h2>
 
-      {/* Stats */}
       <div className={styles.stats}>
-
         <div className={styles.statCard}>
-          <h2>{data.totalReviews}</h2>
+          <h2>{stats.totalReviews}</h2>
           <p>Recensioner</p>
         </div>
 
         <div className={styles.statCard}>
-          <h2>{data.avgRating.toFixed(1)}</h2>
+          <h2>{stats.avgRating.toFixed(1)}</h2>
           <p>Snittbetyg</p>
         </div>
 
         <div className={styles.statCard}>
-          <h2>{data.totalLikes}</h2>
+          <h2>{stats.totalLikes}</h2>
           <p>Likes</p>
         </div>
-
       </div>
 
-      {/* Follow button */}
       {id !== myUserId && (
         <div className={styles.followWrapper}>
           <button
@@ -182,7 +162,6 @@ export default function UserProfilePage() {
           </button>
         </div>
       )}
-
     </div>
   );
 }

@@ -5,102 +5,98 @@ import styles from "./Login.module.css";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
+import { loginUser } from "../../api/authApi";
+
 export default function LoginPage() {
-    const navigate = useNavigate();
-    const { login } = useAuth();
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-        setLoading(true);
-        setError(null);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        try {
-            const response = await fetch("http://localhost:3000/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
+    setLoading(true);
+    setError(null);
 
-            const data = await response.json();
+    try {
+      const data = await loginUser(email, password);
 
-            if (!response.ok) {
-                throw new Error(data.error || "Inloggning misslyckades");
-            }
+      // Spara token
+      login(data.token);
 
-            //Spara token
-            login(data.token);
+      // Visa toast
+      toast.success("Inloggad!");
 
-            //Visa toast
-            toast.success("Inloggad!");
+      // Navigera till startsidan
+      navigate("/");
 
-            //Navigera till startsidan
-            navigate("/");
-        } catch (err) {
+    } catch (err) {
 
-        const message =
-            err instanceof Error ? err.message : "Ett fel uppstod";
+      const message =
+        err instanceof Error ? err.message : "Inloggning misslyckades";
 
-        setError(message);
+      setError(message);
 
-        toast.error(message);
+      toast.error(message);
 
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
-return (
-  <div className={styles.wrapper}>
-    <div className={styles.card}>
-      <h1>Logga in</h1>
+  return (
+    <div className={styles.wrapper}>
+      <div className={styles.card}>
+        <h1>Logga in</h1>
 
-      <form onSubmit={handleLogin}>
-        <div className={styles.inputGroup}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+        <form onSubmit={handleLogin}>
+          <div className={styles.inputGroup}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className={styles.inputGroup}>
-          <input
-            type="password"
-            placeholder="Lösenord"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+          <div className={styles.inputGroup}>
+            <input
+              type="password"
+              placeholder="Lösenord"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        <button
-          type="submit"
-          className={styles.button}
-          disabled={loading}
-        >
-          {loading ? "Loggar in..." : "Logga in"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            className={styles.button}
+            disabled={loading}
+          >
+            {loading ? "Loggar in..." : "Logga in"}
+          </button>
+        </form>
 
-      {error && (
-        <p className={styles.error}>
-          {error}
+        {error && (
+          <p className={styles.error}>
+            {error}
+          </p>
+        )}
+
+        <p className={styles.registerText}>
+          Har du inget konto?{" "}
+          <Link to="/register">
+            Registrera dig här
+          </Link>
         </p>
-      )}
-      <p className={styles.registerText}>
-        Har du inget konto? <Link to="/register">Registrera dig här</Link>
-      </p>
+      </div>
     </div>
-  </div>
-);
+  );
 }
