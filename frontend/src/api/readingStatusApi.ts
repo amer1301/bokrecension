@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function getReadingStatus(
   token: string,
@@ -19,7 +19,7 @@ export async function getReadingStatus(
 
 export async function getUserLibrary(token: string) {
   const response = await fetch(
-    "http://localhost:3000/reading-status",
+    `${API_URL}/reading-status`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

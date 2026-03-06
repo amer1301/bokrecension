@@ -1,5 +1,7 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 export async function followUser(userId: string, followerId: string) {
-  await fetch(`http://localhost:3000/users/${userId}/follow`, {
+  await fetch(`${API_URL}/users/${userId}/follow`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -9,7 +11,7 @@ export async function followUser(userId: string, followerId: string) {
 }
 
 export async function unfollowUser(userId: string, followerId: string) {
-  await fetch(`http://localhost:3000/users/${userId}/follow`, {
+  await fetch(`${API_URL}/users/${userId}/follow`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -19,9 +21,9 @@ export async function unfollowUser(userId: string, followerId: string) {
 }
 
 export async function getFollowStatus(userId: string, followerId: string) {
-  const res = await fetch(
-    `http://localhost:3000/users/${userId}/follow-status/${followerId}`
-  );
+const res = await fetch(
+  `${API_URL}/users/${userId}/follow-status/${followerId}`
+);
 
   return res.json();
 }

@@ -1,5 +1,7 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 export async function updateUser(userId: string, data: any) {
-  const res = await fetch(`http://localhost:3000/users/${userId}`, {
+  const res = await fetch(`${API_URL}/users/${userId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -15,7 +17,7 @@ export async function updateUser(userId: string, data: any) {
 }
 
 export async function getUser(userId: string) {
-  const res = await fetch(`http://localhost:3000/users/${userId}`);
+  const res = await fetch(`${API_URL}/users/${userId}`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch user");
