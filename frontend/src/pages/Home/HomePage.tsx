@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import BookList from "../../components/BookList";
+import BookList from "../../components/BookList/BookList";
 import styles from "./Home.module.css";
 import { getUserLibrary } from "../../api/readingStatusApi";
 

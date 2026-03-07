@@ -1,0 +1,7 @@
+.bookGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  justify-content: center;
+}
