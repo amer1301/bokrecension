@@ -147,6 +147,32 @@ margin-bottom: 1em;
   font-family: 'DM Sans', sans-serif;
 }
 
+.commentsSection {
+  margin-top: 15px;
+}
+
+.commentToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.commentList {
+  margin-top: 10px;
+}
+
+.comment {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.commentForm {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
 @media (max-width: 480px) {
 
   .reviewCard {

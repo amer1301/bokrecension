@@ -18,8 +18,11 @@ model User {
   likes           ReviewLike[]
   createdAt       DateTime        @default(now())
 
-  followers Follow[] @relation("followers")
-  following Follow[] @relation("following")
+  followers     Follow[]       @relation("followers")
+  following     Follow[]       @relation("following")
+  comments      Comment[]
+  notifications Notification[] @relation("UserNotifications")
+actions       Notification[] @relation("ActorNotifications")
 }
 
 model Review {
@@ -31,6 +34,19 @@ model Review {
   user      User         @relation(fields: [userId], references: [id])
   createdAt DateTime     @default(now())
   likes     ReviewLike[]
+  comments  Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 }
 
 model ReadingStatus {
@@ -68,4 +84,17 @@ model Follow {
   following User @relation("following", fields: [followingId], references: [id])
 
   @@id([followerId, followingId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User @relation("UserNotifications", fields: [userId], references: [id])
+
+  actorId String
+  actor   User @relation("ActorNotifications", fields: [actorId], references: [id])
 }

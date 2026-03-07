@@ -13,9 +13,12 @@ import {
   createReview,
   updateReview,
   deleteReview,
+} from "../../api/reviewApi";
+
+import {
   likeReview,
   unlikeReview,
-} from "../../api/reviewApi";
+} from "../../api/likeApi";
 
 import type { PaginatedReviews } from "../../api/reviewApi";
 
@@ -52,9 +55,6 @@ const {
   enabled: !!id,
 });
 
-if (loadingBook || loadingReviews) {
-  return <Spinner />;
-}
   const reviews = reviewData?.reviews ?? [];
   const totalPages = reviewData?.pagination.totalPages ?? 1;
 
@@ -174,7 +174,9 @@ const toggleLikeMutation = useMutation({
     setRating(5);
   };
 
-  if (loadingBook) return <p>Laddar bok...</p>;
+  if (loadingBook || loadingReviews) {
+  return <Spinner />;
+}
   if (!book) return <p>Ingen bok hittades.</p>;
 
 return (

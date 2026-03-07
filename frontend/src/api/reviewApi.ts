@@ -31,7 +31,7 @@ export interface PaginatedReviews {
 }
 
 /* =========================
-   HÄMTA RECENSIONER (med pagination)
+   HÄMTA RECENSIONER
 ========================= */
 
 export async function getReviews(
@@ -41,12 +41,13 @@ export async function getReviews(
   sort: "asc" | "desc" = "desc",
   token?: string
 ): Promise<PaginatedReviews> {
+
   const response = await fetch(
     `${API_URL}/reviews/${bookId}?page=${page}&limit=${limit}&sort=${sort}`,
     {
       headers: token
         ? { Authorization: `Bearer ${token}` }
-        : {},
+        : {}
     }
   );
 
@@ -65,13 +66,14 @@ export async function createReview(
   token: string,
   data: { bookId: string; text: string; rating: number }
 ): Promise<Review> {
+
   const response = await fetch(`${API_URL}/reviews`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(data)
   });
 
   if (!response.ok) {
@@ -91,13 +93,14 @@ export async function updateReview(
   reviewId: string,
   data: { text: string; rating: number }
 ): Promise<Review> {
+
   const response = await fetch(`${API_URL}/reviews/${reviewId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(data)
   });
 
   if (!response.ok) {
@@ -116,67 +119,16 @@ export async function deleteReview(
   token: string,
   reviewId: string
 ): Promise<void> {
+
   const response = await fetch(`${API_URL}/reviews/${reviewId}`, {
     method: "DELETE",
     headers: {
-      Authorization: `Bearer ${token}`,
-    },
+      Authorization: `Bearer ${token}`
+    }
   });
 
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || "Kunde inte ta bort recension");
   }
-}
-
-/* =========================
-   GILLA RECENSION
-========================= */
-
-export async function likeReview(
-  token: string,
-  reviewId: string
-): Promise<{ message: string }> {
-  const response = await fetch(
-    `${API_URL}/reviews/${reviewId}/like`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Kunde inte gilla recension");
-  }
-
-  return response.json();
-}
-
-/* =========================
-   TA BORT GILLA
-========================= */
-
-export async function unlikeReview(
-  token: string,
-  reviewId: string
-): Promise<{ message: string }> {
-  const response = await fetch(
-    `${API_URL}/reviews/${reviewId}/like`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Kunde inte ta bort gilla");
-  }
-
-  return response.json();
 }

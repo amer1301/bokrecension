@@ -7,6 +7,10 @@ import usersRoutes from "./routes/users";
 import authRoutes from "./routes/auth";
 import reviewRoutes from "./routes/reviews";
 import readingStatusRoutes from "./routes/readingStatus";
+import comments from "./routes/comments";
+import likes from "./routes/likes";
+import notifications from "./routes/notifications";
+import feed from "./routes/feed"
 
 dotenv.config();
 
@@ -48,6 +52,14 @@ app.use("/reading-status", readingStatusRoutes);
 ========================= */
 
 app.use(errorHandler);
+
+/* =========================
+   COMMENTS & LIKES
+========================= */
+app.use("/comments", comments);
+app.use("/likes", likes);
+app.use("/notifications", notifications)
+app.use("/feed", feed)
 
 /* =========================
    SERVER START

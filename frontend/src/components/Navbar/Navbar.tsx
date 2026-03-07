@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./Navbar.module.css";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import { Link, useNavigate } from "react-router-dom";
+import { getNotifications } from "../../api/notificationApi";
 
 interface Props {
   isAuthenticated: boolean;
@@ -9,53 +10,162 @@ interface Props {
 }
 
 export default function Navbar({ isAuthenticated, logout }: Props) {
+
   const [menuOpen, setMenuOpen] = useState(false);
-const navigate = useNavigate();
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  const navigate = useNavigate();
+
+  /* =========================
+     LOAD NOTIFICATIONS
+  ========================= */
+
+  useEffect(() => {
+
+    if (!isAuthenticated) return;
+
+    const loadNotifications = async () => {
+
+      try {
+
+        const token = localStorage.getItem("token") || "";
+
+        const data = await getNotifications(token);
+
+        setNotifications(data);
+
+      } catch (err) {
+        console.error("Could not load notifications");
+      }
+
+    };
+
+    loadNotifications();
+
+  }, [isAuthenticated]);
+
   return (
+
     <nav className={styles.navbar}>
-      {menuOpen && <div className={styles.overlay} onClick={() => setMenuOpen(false)} />}
-      <Link to="/" className={styles.logo}>
-        <img src="/cat.png" className={styles.icon} alt="logo" />
+
+      {menuOpen && (
+        <div
+          className={styles.overlay}
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      {/* LOGO */}
+
+      <Link
+        to="/"
+        className={styles.logo}
+        onClick={() => setMenuOpen(false)}
+      >
+        <img
+          src="/cat.png"
+          className={styles.icon}
+          alt="logo"
+        />
+
         Bokrecensioner
       </Link>
 
-<button
-  className={styles.hamburger}
-  onClick={() => setMenuOpen(!menuOpen)}
->
-  {menuOpen ? "✕" : "☰"}
-</button>
+      {/* HAMBURGER */}
 
-<div className={`${styles.links} ${menuOpen ? styles.open : ""}`}>
-  <Link to="/" onClick={() => setMenuOpen(false)}>
-    Hem
-  </Link>
+      <button
+        className={styles.hamburger}
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        {menuOpen ? "✕" : "☰"}
+      </button>
 
-  <Link to="/profil" onClick={() => setMenuOpen(false)}>
-    Min profil
-  </Link>
+      {/* LINKS */}
 
-  <ThemeToggle />
+      <div
+        className={`${styles.links} ${
+          menuOpen ? styles.open : ""
+        }`}
+      >
 
-  {!isAuthenticated && (
-    <Link to="/login" onClick={() => setMenuOpen(false)}>
-      Logga in
-    </Link>
-  )}
+        {/* HOME */}
 
-  {isAuthenticated && (
-<button
-  onClick={() => {
-    logout();
-    navigate("/login");
-    setMenuOpen(false);
-  }}
-  className={styles.logoutButton}
->
-  Logga ut
-</button>
-  )}
-</div>
+        <Link
+          to="/"
+          onClick={() => setMenuOpen(false)}
+        >
+          Hem
+        </Link>
+
+        {/* FEED */}
+
+        {isAuthenticated && (
+          <Link
+            to="/feed"
+            onClick={() => setMenuOpen(false)}
+          >
+            Feed
+          </Link>
+        )}
+
+        {/* PROFILE */}
+
+        {isAuthenticated && (
+          <Link
+            to="/profil"
+            onClick={() => setMenuOpen(false)}
+          >
+            Min profil
+          </Link>
+        )}
+
+        {/* NOTIFICATIONS */}
+
+        {isAuthenticated && (
+          <Link
+            to="/notifications"
+            onClick={() => setMenuOpen(false)}
+          >
+            🔔 {notifications.length}
+          </Link>
+        )}
+
+        {/* THEME */}
+
+        <ThemeToggle />
+
+        {/* LOGIN */}
+
+        {!isAuthenticated && (
+          <Link
+            to="/login"
+            onClick={() => setMenuOpen(false)}
+          >
+            Logga in
+          </Link>
+        )}
+
+        {/* LOGOUT */}
+
+        {isAuthenticated && (
+          <button
+            onClick={() => {
+
+              logout();
+
+              navigate("/login");
+
+              setMenuOpen(false);
+
+            }}
+            className={styles.logoutButton}
+          >
+            Logga ut
+          </button>
+        )}
+
+      </div>
+
     </nav>
   );
 }
