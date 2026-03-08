@@ -33,7 +33,8 @@ router.post("/:reviewId", authenticate, async (req, res) => {
         data: {
           type: "LIKE_REVIEW",
           userId: review.userId,
-          actorId: userId
+          actorId: userId,
+          reviewId: reviewId
         }
       });
     }

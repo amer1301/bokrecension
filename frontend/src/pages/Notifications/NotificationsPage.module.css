@@ -1,0 +1,41 @@
+.container{
+  max-width:700px;
+  margin:40px auto;
+  padding:20px;
+}
+
+.title{
+  font-size:32px;
+  margin-bottom:25px;
+}
+
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+.card{
+  background:white;
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  transition:transform 0.15s;
+}
+
+.card:hover{
+  transform:translateY(-2px);
+}
+
+.message{
+  font-size:16px;
+}
+
+.date{
+  font-size:13px;
+  color:#777;
+}
+
+.empty{
+  color:#777;
+}

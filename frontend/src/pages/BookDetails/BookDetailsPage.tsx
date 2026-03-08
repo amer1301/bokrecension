@@ -3,11 +3,14 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import styles from "./BookDetails.module.css";
+
 import RatingSummary from "../../components/RatingSummary/RatingSummary";
 import ReviewCard from "../../components/ReviewCard/ReviewCard";
 import ReadingStatusSection from "../../components/ReadingStatus/ReadingStatusSection";
 import Spinner from "../../components/Spinner/Spinner";
+
 import { getBookDetails } from "../../api/bookApi";
+
 import {
   getReviews,
   createReview,
@@ -28,6 +31,7 @@ import {
 } from "../../api/readingStatusApi";
 
 export default function BookDetailsPage() {
+
   const { id } = useParams<{ id: string }>();
   const { token, isAuthenticated, userId } = useAuth();
   const queryClient = useQueryClient();
@@ -37,26 +41,28 @@ export default function BookDetailsPage() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
 
-  const {
-    data: book,
-    isLoading: loadingBook,
-  } = useQuery({
+  /* ================= BOOK QUERY ================= */
+
+  const { data: book, isLoading: loadingBook } = useQuery({
     queryKey: ["book", id],
     queryFn: () => getBookDetails(id!),
     enabled: !!id,
   });
 
-const {
-  data: reviewData,
-  isLoading: loadingReviews,
-} = useQuery<PaginatedReviews>({
-  queryKey: ["reviews", id, page, sort],
-  queryFn: () => getReviews(id!, page, 5, sort, token ?? undefined),
-  enabled: !!id,
-});
+  /* ================= REVIEWS QUERY ================= */
+
+  const { data: reviewData, isLoading: loadingReviews } =
+    useQuery<PaginatedReviews>({
+      queryKey: ["reviews", id, page, sort],
+      queryFn: () =>
+        getReviews(id!, page, 5, sort, token ?? undefined),
+      enabled: !!id,
+    });
 
   const reviews = reviewData?.reviews ?? [];
   const totalPages = reviewData?.pagination.totalPages ?? 1;
+
+  /* ================= CREATE REVIEW ================= */
 
   const createReviewMutation = useMutation({
     mutationFn: (data: {
@@ -64,13 +70,16 @@ const {
       text: string;
       rating: number;
     }) => createReview(token!, data),
+
     onSuccess: () => {
       setPage(1);
       queryClient.invalidateQueries({
-        queryKey: ["reviews", id, page, sort],
+        queryKey: ["reviews", id],
       });
     },
   });
+
+  /* ================= UPDATE REVIEW ================= */
 
   const updateReviewMutation = useMutation({
     mutationFn: (data: {
@@ -82,86 +91,102 @@ const {
         text: data.text,
         rating: data.rating,
       }),
+
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ["reviews", id, page, sort],
+        queryKey: ["reviews", id],
       }),
   });
+
+  /* ================= DELETE REVIEW ================= */
 
   const deleteReviewMutation = useMutation({
     mutationFn: (reviewId: string) =>
       deleteReview(token!, reviewId),
+
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ["reviews", id, page, sort],
+        queryKey: ["reviews", id],
       }),
   });
 
-const toggleLikeMutation = useMutation({
-  mutationFn: ({
-    reviewId,
-    isLiked,
-  }: {
-    reviewId: string;
-    isLiked: boolean;
-  }) =>
-    isLiked
-      ? unlikeReview(token!, reviewId)
-      : likeReview(token!, reviewId),
+  /* ================= TOGGLE LIKE ================= */
 
-  onMutate: async ({ reviewId, isLiked }) => {
-    await queryClient.cancelQueries({
-      queryKey: ["reviews", id, page, sort],
-    });
+  const toggleLikeMutation = useMutation({
+    mutationFn: ({
+      reviewId,
+      isLiked,
+    }: {
+      reviewId: string;
+      isLiked: boolean;
+    }) =>
+      isLiked
+        ? unlikeReview(token!, reviewId)
+        : likeReview(token!, reviewId),
 
-    const previousData =
-      queryClient.getQueryData<PaginatedReviews>([
-        "reviews",
-        id,
-        page,
-        sort,
-      ]);
+    onMutate: async ({ reviewId, isLiked }) => {
 
-    if (!previousData) return;
+      await queryClient.cancelQueries({
+        queryKey: ["reviews", id, page, sort],
+      });
 
-    queryClient.setQueryData<PaginatedReviews>(
-      ["reviews", id, page, sort],
-      {
-        ...previousData,
-        reviews: previousData.reviews.map((review) =>
-          review.id === reviewId
-            ? {
-                ...review,
-                isLikedByUser: !isLiked,
-                likesCount: isLiked
-                  ? review.likesCount - 1
-                  : review.likesCount + 1,
-              }
-            : review
-        ),
-      }
-    );
+      const previousData =
+        queryClient.getQueryData<PaginatedReviews>([
+          "reviews",
+          id,
+          page,
+          sort,
+        ]);
 
-    return { previousData };
-  },
+      if (!previousData) return;
 
-  onError: (_err, _vars, context) => {
-    if (context?.previousData) {
-      queryClient.setQueryData(
+      queryClient.setQueryData<PaginatedReviews>(
         ["reviews", id, page, sort],
-        context.previousData
+        {
+          ...previousData,
+          reviews: previousData.reviews.map((review) =>
+            review.id === reviewId
+              ? {
+                  ...review,
+                  isLikedByUser: !isLiked,
+                  likesCount: isLiked
+                    ? review.likesCount - 1
+                    : review.likesCount + 1,
+                }
+              : review
+          ),
+        }
       );
-    }
-  },
 
-  onSettled: () => {
-    queryClient.invalidateQueries({
-      queryKey: ["reviews", id],
-    });
-  },
-});
+      return { previousData };
+    },
+
+    onError: (_err, _vars, context) => {
+
+      if (context?.previousData) {
+
+        queryClient.setQueryData(
+          ["reviews", id, page, sort],
+          context.previousData
+        );
+
+      }
+
+    },
+
+    onSettled: () => {
+
+      queryClient.invalidateQueries({
+        queryKey: ["reviews", id],
+      });
+
+    },
+  });
+
+  /* ================= CREATE REVIEW HANDLER ================= */
 
   const handleCreateReview = () => {
+
     if (!newReview.trim()) return;
 
     createReviewMutation.mutate({
@@ -174,153 +199,186 @@ const toggleLikeMutation = useMutation({
     setRating(5);
   };
 
+  /* ================= LOADING STATES ================= */
+
   if (loadingBook || loadingReviews) {
-  return <Spinner />;
-}
-  if (!book) return <p>Ingen bok hittades.</p>;
+    return <Spinner />;
+  }
 
-return (
-  <div className={styles.appContainer}>
-    {/* ================= BOOK HEADER ================= */}
-    <header className={styles.bookHeader}>
-      <h1 className={styles.title}>
-        {book.volumeInfo.title}
-      </h1>
-      <hr className={styles.divider} />
-    </header>
+  if (!book) {
+    return <p>Ingen bok hittades.</p>;
+  }
 
-    {/* ================= READING STATUS ================= */}
-    {isAuthenticated && token && (
-      <ReadingStatusSection
-        bookId={id!}
-        token={token}
-        pageCount={book.volumeInfo.pageCount}
-        getReadingStatus={getReadingStatus}
-        updateReadingStatus={updateReadingStatus}
-      />
-    )}
+  /* ================= UI ================= */
 
-    {/* ================= REVIEWS ================= */}
-    <section className={styles.section}>
-      <div className={styles.reviewsHeader}>
-        <h2>Recensioner</h2>
+  return (
 
-        <div className={styles.sortWrapper}>
-          <label htmlFor="sort">Sortera:</label>
-          <select
-            id="sort"
-            value={sort}
-            onChange={(e) => {
-              setSort(e.target.value as "asc" | "desc");
-              setPage(1);
-            }}
-          >
-            <option value="desc">Nyast först</option>
-            <option value="asc">Äldst först</option>
-          </select>
-        </div>
-      </div>
+    <div className={styles.appContainer}>
 
-      <RatingSummary reviews={reviews} />
+      {/* BOOK HEADER */}
 
-      {loadingReviews && (
-        <p className={styles.message}>
-          Laddar recensioner...
-        </p>
-      )}
+      <header className={styles.bookHeader}>
+        <h1 className={styles.title}>
+          {book.volumeInfo.title}
+        </h1>
 
-      <div className={styles.reviewList}>
-        {reviews.map((review) => (
-          <ReviewCard
-            key={review.id}
-            review={review}
-            isOwner={review.user?.id === userId}
-            isAuthenticated={isAuthenticated}
-            isLikeLoading={toggleLikeMutation.isPending}
-            onDelete={(id) =>
-              deleteReviewMutation.mutate(id)
-            }
-            onUpdate={(id, text, rating) =>
-              updateReviewMutation.mutate({
-                reviewId: id,
-                text,
-                rating,
-              })
-            }
-            onToggleLike={(id, isLiked) =>
-              toggleLikeMutation.mutate({
-                reviewId: id,
-                isLiked,
-              })
-            }
-          />
-        ))}
-      </div>
+        <hr className={styles.divider} />
+      </header>
 
-      {totalPages > 1 && (
-        <div className={styles.pagination}>
-          <button
-            disabled={page === 1}
-            onClick={() =>
-              setPage((prev) => prev - 1)
-            }
-          >
-            Föregående
-          </button>
+      {/* READING STATUS */}
 
-          <span>
-            Sida {page} av {totalPages}
-          </span>
+      {isAuthenticated && token && (
 
-          <button
-            disabled={page === totalPages}
-            onClick={() =>
-              setPage((prev) => prev + 1)
-            }
-          >
-            Nästa
-          </button>
-        </div>
-      )}
-    </section>
-
-    {/* ================= CREATE REVIEW ================= */}
-    {isAuthenticated && (
-      <section className={styles.createReview}>
-        <h3>Skriv recension</h3>
-
-        <textarea
-          className={styles.textarea}
-          value={newReview}
-          onChange={(e) =>
-            setNewReview(e.target.value)
-          }
-          placeholder="Vad tyckte du om boken?"
+        <ReadingStatusSection
+          bookId={id!}
+          token={token}
+          pageCount={book.volumeInfo.pageCount}
+          getReadingStatus={getReadingStatus}
+          updateReadingStatus={updateReadingStatus}
         />
 
-        <div className={styles.reviewControls}>
-          <select
-            value={rating}
-            onChange={(e) =>
-              setRating(Number(e.target.value))
-            }
-          >
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
+      )}
 
-          <button
-            onClick={handleCreateReview}
-            className={styles.submitButton}
-          >
-            Skicka recension
-          </button>
+      {/* REVIEWS */}
+
+      <section className={styles.section}>
+
+        <div className={styles.reviewsHeader}>
+
+          <h2>Recensioner</h2>
+
+          <div className={styles.sortWrapper}>
+
+            <label htmlFor="sort">Sortera:</label>
+
+            <select
+              id="sort"
+              value={sort}
+              onChange={(e) => {
+
+                setSort(e.target.value as "asc" | "desc");
+                setPage(1);
+
+              }}
+            >
+
+              <option value="desc">Nyast först</option>
+              <option value="asc">Äldst först</option>
+
+            </select>
+
+          </div>
+
         </div>
+
+        <RatingSummary reviews={reviews} />
+
+        <div className={styles.reviewList}>
+
+          {reviews.map((review) => (
+
+            <ReviewCard
+              key={review.id}
+              review={review}
+              isOwner={review.user?.id === userId}
+              isAuthenticated={isAuthenticated}
+              isLikeLoading={toggleLikeMutation.isPending}
+              onDelete={(id) =>
+                deleteReviewMutation.mutate(id)
+              }
+              onUpdate={(id, text, rating) =>
+                updateReviewMutation.mutate({
+                  reviewId: id,
+                  text,
+                  rating,
+                })
+              }
+              onToggleLike={(id, isLiked) =>
+                toggleLikeMutation.mutate({
+                  reviewId: id,
+                  isLiked,
+                })
+              }
+            />
+
+          ))}
+
+        </div>
+
+        {totalPages > 1 && (
+
+          <div className={styles.pagination}>
+
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Föregående
+            </button>
+
+            <span>
+              Sida {page} av {totalPages}
+            </span>
+
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Nästa
+            </button>
+
+          </div>
+
+        )}
+
       </section>
-    )}
-  </div>
-);
+
+      {/* CREATE REVIEW */}
+
+      {isAuthenticated && (
+
+        <section className={styles.createReview}>
+
+          <h3>Skriv recension</h3>
+
+          <textarea
+            className={styles.textarea}
+            value={newReview}
+            onChange={(e) =>
+              setNewReview(e.target.value)
+            }
+            placeholder="Vad tyckte du om boken?"
+          />
+
+          <div className={styles.reviewControls}>
+
+            <select
+              value={rating}
+              onChange={(e) =>
+                setRating(Number(e.target.value))
+              }
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleCreateReview}
+              className={styles.submitButton}
+            >
+              Skicka recension
+            </button>
+
+          </div>
+
+        </section>
+
+      )}
+
+    </div>
+
+  );
 }

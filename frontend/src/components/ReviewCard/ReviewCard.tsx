@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./ReviewCard.module.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -52,33 +52,40 @@ export default function ReviewCard({
   const [rating, setRating] = useState(review.rating);
 
   const [comments, setComments] = useState<Comment[]>([]);
-  const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
 
   /* =========================
      LOAD COMMENTS
   ========================= */
 
-  const loadComments = async () => {
-    try {
-      const data = await getComments(review.id);
-      setComments(data);
-    } catch {
-      toast.error("Kunde inte hämta kommentarer");
-    }
-  };
+  useEffect(() => {
+
+    const loadComments = async () => {
+      try {
+        const data = await getComments(review.id);
+        setComments(data);
+      } catch {
+        toast.error("Kunde inte hämta kommentarer");
+      }
+    };
+
+    loadComments();
+
+  }, [review.id]);
 
   /* =========================
      CREATE COMMENT
   ========================= */
 
   const handleComment = async () => {
+
     if (!commentText.trim()) {
       toast.error("Kommentaren kan inte vara tom");
       return;
     }
 
     try {
+
       const token = localStorage.getItem("token") || "";
 
       const newComment = await createComment(
@@ -88,12 +95,15 @@ export default function ReviewCard({
       );
 
       setComments((prev) => [newComment, ...prev]);
+
       setCommentText("");
 
       toast.success("Kommentar tillagd 💬");
+
     } catch {
       toast.error("Kunde inte skapa kommentar");
     }
+
   };
 
   /* =========================
@@ -115,10 +125,13 @@ export default function ReviewCard({
   };
 
   return (
+
     <div className={styles.reviewCard}>
 
-      {/* ❤️ LIKE BUTTON */}
+      {/* LIKE BUTTON */}
+
       {isAuthenticated && (
+
         <button
           className={`${styles.heartButton} ${
             review.isLikedByUser ? styles.liked : ""
@@ -133,16 +146,22 @@ export default function ReviewCard({
             } else {
               toast.success("Du gillade recensionen ❤️");
             }
+
           }}
         >
+
           {review.isLikedByUser ? <FaHeart /> : <FaRegHeart />}
+
           <span>{review.likesCount}</span>
+
         </button>
+
       )}
 
-      {/* ===== HEADER ===== */}
+      {/* HEADER */}
 
       <div className={styles.header}>
+
         <div>
 
           <Link
@@ -157,11 +176,13 @@ export default function ReviewCard({
           </div>
 
         </div>
+
       </div>
 
-      {/* ===== EDIT MODE ===== */}
+      {/* EDIT MODE */}
 
       {editing ? (
+
         <>
 
           <textarea
@@ -175,19 +196,16 @@ export default function ReviewCard({
             onChange={(e) => setRating(Number(e.target.value))}
             className={styles.select}
           >
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
+
+            {[1,2,3,4,5].map((n) => (
+              <option key={n} value={n}>{n}</option>
             ))}
+
           </select>
 
           <div className={styles.actions}>
 
-            <button
-              onClick={handleSave}
-              className="outlineButton"
-            >
+            <button onClick={handleSave} className="outlineButton">
               Spara
             </button>
 
@@ -201,10 +219,10 @@ export default function ReviewCard({
           </div>
 
         </>
-      ) : (
-        <>
 
-          {/* ===== NORMAL VIEW ===== */}
+      ) : (
+
+        <>
 
           <div className={styles.rating}>
             Betyg: {review.rating} / 5
@@ -215,6 +233,7 @@ export default function ReviewCard({
           </p>
 
           {isOwner && (
+
             <div className={styles.actions}>
 
               <button
@@ -235,74 +254,59 @@ export default function ReviewCard({
               </button>
 
             </div>
+
           )}
 
         </>
+
       )}
 
-      {/* =========================
-         COMMENTS SECTION
-      ========================= */}
+      {/* COMMENTS */}
 
       <div className={styles.commentsSection}>
 
-        <button
-          className={styles.commentToggle}
-          onClick={() => {
-
-            const newState = !showComments;
-            setShowComments(newState);
-
-            if (newState && comments.length === 0) {
-              loadComments();
-            }
-          }}
-        >
+        <div className={styles.commentHeader}>
           💬 Kommentarer ({comments.length})
-        </button>
+        </div>
 
-        {showComments && (
-          <>
+        <div className={styles.commentList}>
 
-            {/* COMMENT LIST */}
+          {comments.map((c) => (
 
-            <div className={styles.commentList}>
+            <div key={c.id} className={styles.comment}>
 
-              {comments.map((c) => (
-                <div key={c.id} className={styles.comment}>
+              <strong>{c.user.username}</strong>
 
-                  <strong>{c.user.username}</strong>
-
-                  <p>{c.text}</p>
-
-                </div>
-              ))}
+              <p>{c.text}</p>
 
             </div>
 
-            {/* COMMENT FORM */}
+          ))}
 
-            {isAuthenticated && (
-              <div className={styles.commentForm}>
+        </div>
 
-                <input
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Skriv en kommentar..."
-                />
+        {isAuthenticated && (
 
-                <button onClick={handleComment}>
-                  Skicka
-                </button>
+          <div className={styles.commentForm}>
 
-              </div>
-            )}
+            <input
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Skriv en kommentar..."
+            />
 
-          </>
+            <button onClick={handleComment} className="outlineButton">
+              Skicka
+            </button>
+
+          </div>
+
         )}
 
       </div>
 
     </div>
+
   );
+
 }

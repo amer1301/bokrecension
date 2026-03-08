@@ -3,6 +3,7 @@ import styles from "./Navbar.module.css";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import { Link, useNavigate } from "react-router-dom";
 import { getNotifications } from "../../api/notificationApi";
+import { useAuth } from "../../context/AuthContext";
 
 interface Props {
   isAuthenticated: boolean;
@@ -15,34 +16,37 @@ export default function Navbar({ isAuthenticated, logout }: Props) {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   const navigate = useNavigate();
+  const { token } = useAuth();
 
   /* =========================
      LOAD NOTIFICATIONS
   ========================= */
 
-  useEffect(() => {
+useEffect(() => {
+  if (!token) return;
 
-    if (!isAuthenticated) return;
+  const loadNotifications = async () => {
 
-    const loadNotifications = async () => {
+    try {
+      const data = await getNotifications(token);
 
-      try {
+      setNotifications(data);
 
-        const token = localStorage.getItem("token") || "";
+    } catch (err) {
 
-        const data = await getNotifications(token);
+      console.error("Could not load notifications");
 
-        setNotifications(data);
+    }
 
-      } catch (err) {
-        console.error("Could not load notifications");
-      }
+  };
 
-    };
+  loadNotifications();
 
-    loadNotifications();
+  const interval = setInterval(loadNotifications, 30000);
 
-  }, [isAuthenticated]);
+  return () => clearInterval(interval);
+
+}, [isAuthenticated]);
 
   return (
 

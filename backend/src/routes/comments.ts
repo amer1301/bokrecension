@@ -17,6 +17,15 @@ router.post("/:reviewId", authenticate, async (req, res) => {
       return res.status(400).json({ error: "Comment text required" });
     }
 
+    // hämta recensionen
+    const review = await prisma.review.findUnique({
+      where: { id: reviewId }
+    });
+
+    if (!review) {
+      return res.status(404).json({ error: "Review not found" });
+    }
+
     const comment = await prisma.comment.create({
       data: {
         text,
@@ -28,6 +37,23 @@ router.post("/:reviewId", authenticate, async (req, res) => {
       }
     });
 
+    /*
+    CREATE NOTIFICATION
+    */
+
+    if (review.userId !== userId) {
+
+      await prisma.notification.create({
+        data: {
+          type: "COMMENT_REVIEW",
+          userId: review.userId,   // vem ska få notisen
+          actorId: userId,          // vem kommenterade
+          reviewId: reviewId
+        }
+      });
+
+    }
+
     res.json(comment);
 
   } catch (error) {
@@ -36,11 +62,13 @@ router.post("/:reviewId", authenticate, async (req, res) => {
   }
 });
 
+
 /*
 GET COMMENTS FOR A REVIEW
 */
 router.get("/:reviewId", async (req, res) => {
   try {
+
     const reviewId = req.params.reviewId as string;
 
     const comments = await prisma.comment.findMany({
