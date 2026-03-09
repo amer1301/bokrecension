@@ -1,6 +1,8 @@
+import styles from "./Footer.module.css";
+
 export default function Footer() {
   return (
-    <footer className="footer">
+    <footer className={styles.footer}>
       <a 
         href="https://www.flaticon.com/free-icons/cute" 
         title="cute icons"

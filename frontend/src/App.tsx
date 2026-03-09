@@ -22,19 +22,22 @@ export default function App() {
         logout={logout} 
       />
 
-      <div className="container section">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/book/:id" element={<BookDetailsPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/profil" element={<ProfilePage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/user/:id" element={<UserProfilePage />} />
-          <Route path="/edit-profile" element={<EditProfilePage />} />
-          <Route path="/feed" element={<FeedPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-        </Routes>
-      </div>
+      <main className="mainContent">
+        <div className="container section">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/book/:id" element={<BookDetailsPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/profil" element={<ProfilePage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/user/:id" element={<UserProfilePage />} />
+            <Route path="/edit-profile" element={<EditProfilePage />} />
+            <Route path="/feed" element={<FeedPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+          </Routes>
+        </div>
+      </main>
+
       <Footer />
     </BrowserRouter>
   );

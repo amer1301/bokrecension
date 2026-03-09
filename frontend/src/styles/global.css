@@ -11,11 +11,25 @@ body, .card, .button {
   transition: background 0.3s ease, color 0.3s ease, border 0.3s ease;
 }
 
+html, body, #root {
+  height: 100%;
+}
+
 body {
   background: var(--color-bg);
   font-family: 'DM Sans', sans-serif;
   color: var(--color-text);
   line-height: 1.6;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.mainContent {
+  flex: 1;
 }
 
 img {
@@ -35,13 +49,6 @@ h1, h2, h3 {
 a {
   text-decoration: none;
   color: inherit;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 3rem 2rem;
-  max-width: 1100px;
 }
 
 .app-container {
@@ -148,13 +155,6 @@ a {
 img {
   max-width: 100%;
   height: auto;
-}
-
-.container {
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 1rem;
 }
 
 [data-theme="dark"] .button {
