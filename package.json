@@ -1,6 +1,9 @@
 {
   "name": "bokrecension",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\""
   },

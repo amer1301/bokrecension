@@ -125,5 +125,13 @@ Backend exponerar endpoints för bland annat:
 - /users – användarhantering
 - /readingStatus – lässtatus
 
+## Node version
+
+Projektet använder Node 20.
+Om du använder nvm:
+```bash
+nvm use
+```
+
 ## Publicering
 https://bokrecension-frontend.onrender.com/

@@ -3,8 +3,17 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { prisma } from "../prisma";
 import { z } from "zod";
+import rateLimit from "express-rate-limit";
 
 const router = Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuter
+  max: 100, // max 100 requests per IP
+  message: {
+    error: "För många loginförsök. Försök igen senare."
+  }
+});
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -64,10 +73,7 @@ router.post("/register", async (req, res, next) => {
 /* =========================
    LOGIN
 ========================= */
-/* =========================
-   LOGIN
-========================= */
-router.post("/login", async (req, res, next) => {
+router.post("/login", loginLimiter, async (req, res, next) => {
   try {
     const result = loginSchema.safeParse(req.body);
 
