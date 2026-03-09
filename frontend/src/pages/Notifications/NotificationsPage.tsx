@@ -84,25 +84,21 @@ export default function NotificationsPage() {
 
         {notifications.map((n) => (
 
-          <Link
-            key={n.id}
-            to={`/book/${n.review?.bookId}`}
-            className={styles.card}
-          >
+<Link
+  key={n.id}
+  to={n.review?.bookId ? `/book/${n.review.bookId}` : "#"}
+  className={styles.card}
+>
+  <p className={styles.message}>
+    {getMessage(n)}
+  </p>
 
-            <p className={styles.message}>
-              {getMessage(n)}
-            </p>
-
-            {n.createdAt && (
-
-              <span className={styles.date}>
-                {new Date(n.createdAt).toLocaleDateString()}
-              </span>
-
-            )}
-
-          </Link>
+  {n.createdAt && (
+    <span className={styles.date}>
+      {new Date(n.createdAt).toLocaleDateString()}
+    </span>
+  )}
+</Link>
 
         ))}
 

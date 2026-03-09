@@ -22,7 +22,7 @@ model User {
   following     Follow[]       @relation("following")
   comments      Comment[]
   notifications Notification[] @relation("UserNotifications")
-actions       Notification[] @relation("ActorNotifications")
+actorNotifications Notification[] @relation("ActorNotifications")
 }
 
 model Review {

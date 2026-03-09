@@ -23,7 +23,7 @@ export default function Navbar({ isAuthenticated, logout }: Props) {
   ========================= */
 
 useEffect(() => {
-  if (!token) return;
+  if (!token || !isAuthenticated) return;
 
   const loadNotifications = async () => {
 
