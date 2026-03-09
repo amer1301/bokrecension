@@ -7,7 +7,10 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error("ERROR:", err);
+
+  if (process.env.NODE_ENV !== "production") {
+    console.error("ERROR:", err);
+  }
 
   // Zod validation error
   if (err instanceof ZodError) {

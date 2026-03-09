@@ -7,7 +7,7 @@ const router = Router();
 /*
 GET USER NOTIFICATIONS
 */
-router.get("/", authenticate, async (req, res) => {
+router.get("/", authenticate, async (req, res, next) => {
 
   try {
 
@@ -46,15 +46,8 @@ router.get("/", authenticate, async (req, res) => {
     res.json(notifications);
 
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      error: "Could not fetch notifications"
-    });
-
+    next(error);
   }
-
 });
 
 export default router;

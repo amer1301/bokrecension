@@ -3,8 +3,15 @@ import { prisma } from "../prisma";
 import { authenticate, authenticateOptional, AuthRequest } from "../middleware/authMiddleware";
 import * as reviewService from "../services/reviewService";
 import { createReviewSchema } from "../validation/reviewSchema";
+import { z } from "zod";
 
 const router = Router();
+
+const reviewSchema = z.object({
+  bookId: z.string(),
+  rating: z.number().min(1).max(5),
+  content: z.string().min(5).max(2000)
+});
 
 /* =========================
    SKAPA RECENSION (Protected)
@@ -12,17 +19,27 @@ const router = Router();
 
 router.post("/", authenticate, async (req: AuthRequest, res, next) => {
   try {
+
     if (!req.userId) {
       return res.sendStatus(401);
     }
 
-    const validated = createReviewSchema.parse(req.body);
+    const result = createReviewSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({
+        error: "Ogiltig input",
+        details: result.error.issues
+      });
+    }
+
+    const { bookId, text, rating } = result.data;
 
     const review = await reviewService.createReview(
       req.userId,
-      validated.bookId,
-      validated.text,
-      validated.rating
+      bookId,
+      text,
+      rating
     );
 
     res.status(201).json(review);

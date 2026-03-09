@@ -7,7 +7,7 @@ const router = Router();
 /*
 LIKE A REVIEW
 */
-router.post("/:reviewId", authenticate, async (req, res) => {
+router.post("/:reviewId", authenticate, async (req, res, next) => {
   try {
     const userId = (req as any).userId;
     const reviewId = req.params.reviewId as string;
@@ -43,14 +43,14 @@ router.post("/:reviewId", authenticate, async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Could not like review" });
+    next(error);
   }
 });
 
 /*
 UNLIKE A REVIEW
 */
-router.delete("/:reviewId", authenticate, async (req, res) => {
+router.delete("/:reviewId", authenticate, async (req, res, next) => {
   try {
     const userId = (req as any).userId;
     const reviewId = req.params.reviewId as string;
@@ -68,7 +68,7 @@ router.delete("/:reviewId", authenticate, async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Could not unlike review" });
+    next(error);
   }
 });
 

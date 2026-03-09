@@ -7,7 +7,7 @@ const router = Router();
    GET USER
 ========================= */
 
-router.get("/:userId", async (req: Request, res: Response) => {
+router.get("/:userId", async (req: Request, res: Response, next) => {
   const userId = req.params.userId as string;
 
   try {
@@ -31,13 +31,7 @@ router.get("/:userId", async (req: Request, res: Response) => {
     res.json(user);
 
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      message: "Could not fetch user",
-    });
-
+    next(error);
   }
 });
 
@@ -46,7 +40,7 @@ router.get("/:userId", async (req: Request, res: Response) => {
    USER STATS
 ========================= */
 
-router.get("/:userId/stats", async (req: Request, res: Response) => {
+router.get("/:userId/stats", async (req: Request, res: Response, next) => {
 
   const userId = req.params.userId as string;
 
@@ -80,15 +74,8 @@ router.get("/:userId/stats", async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      message: "Kunde inte hämta statistik",
-    });
-
+    next(error);
   }
-
 });
 
 
@@ -192,7 +179,7 @@ router.get(
    UPDATE PROFILE
 ========================= */
 
-router.patch("/:userId", async (req: Request, res: Response) => {
+router.patch("/:userId", async (req: Request, res: Response, next) => {
 
   const userId = req.params.userId as string;
   const { username, avatarUrl } = req.body;
@@ -210,15 +197,8 @@ router.patch("/:userId", async (req: Request, res: Response) => {
     res.json(updatedUser);
 
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      message: "Kunde inte uppdatera användare",
-    });
-
+    next(error);
   }
-
 });
 
 
@@ -226,7 +206,7 @@ router.patch("/:userId", async (req: Request, res: Response) => {
    FOLLOWERS / FOLLOWING
 ========================= */
 
-router.get("/:userId/follows", async (req: Request, res: Response) => {
+router.get("/:userId/follows", async (req: Request, res: Response, next) => {
 
   const userId = req.params.userId as string;
 
@@ -268,15 +248,8 @@ router.get("/:userId/follows", async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      message: "Could not fetch follow data",
-    });
-
+    next(error);
   }
-
 });
 
 export default router;
