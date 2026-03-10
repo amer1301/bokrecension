@@ -1,36 +1,35 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+
 import { getFeed } from "../../api/feedApi";
-import ReviewCard from "../../components/ReviewCard/ReviewCard";
 import { likeReview, unlikeReview } from "../../api/likeApi";
+
+import ReviewCard from "../../components/ReviewCard/ReviewCard";
 
 export default function FeedPage() {
 
-  const [feed, setFeed] = useState<any[]>([]);
+  const { token, isAuthenticated } = useAuth();
+
   const [loadingLike, setLoadingLike] = useState(false);
 
-  useEffect(() => {
+  /* ================= FETCH FEED ================= */
 
-    const loadFeed = async () => {
+  const { data: feed = [], isLoading, isError } = useQuery({
+    queryKey: ["feed", token],
+    queryFn: () => getFeed(token!),
+    enabled: !!token && isAuthenticated,
+  });
 
-      const token = localStorage.getItem("token") || "";
-
-      const data = await getFeed(token);
-
-      setFeed(data);
-
-    };
-
-    loadFeed();
-
-  }, []);
+  /* ================= TOGGLE LIKE ================= */
 
   const handleToggleLike = async (reviewId: string, isLiked: boolean) => {
+
+    if (!token) return;
 
     try {
 
       setLoadingLike(true);
-
-      const token = localStorage.getItem("token") || "";
 
       if (isLiked) {
         await unlikeReview(token, reviewId);
@@ -38,21 +37,7 @@ export default function FeedPage() {
         await likeReview(token, reviewId);
       }
 
-      setFeed((prev) =>
-        prev.map((review) =>
-          review.id === reviewId
-            ? {
-                ...review,
-                isLikedByUser: !isLiked,
-                likesCount: isLiked
-                  ? review.likesCount - 1
-                  : review.likesCount + 1,
-              }
-            : review
-        )
-      );
-
-    } catch (err) {
+    } catch {
 
       console.error("Like failed");
 
@@ -64,19 +49,35 @@ export default function FeedPage() {
 
   };
 
+  /* ================= LOADING ================= */
+
+  if (isLoading) {
+    return <p>Laddar feed...</p>;
+  }
+
+  if (isError) {
+    return <p>Kunde inte hämta feed.</p>;
+  }
+
+  /* ================= UI ================= */
+
   return (
 
     <div>
 
       <h2>Aktivitetsflöde</h2>
 
-      {feed.map((review) => (
+      {feed.length === 0 && (
+        <p>Inga recensioner ännu.</p>
+      )}
+
+      {feed.map((review: any) => (
 
         <ReviewCard
           key={review.id}
           review={review}
           isOwner={false}
-          isAuthenticated={true}
+          isAuthenticated={isAuthenticated}
           isLikeLoading={loadingLike}
           onDelete={() => {}}
           onUpdate={() => {}}

@@ -16,40 +16,50 @@ export default function Navbar({ isAuthenticated, logout }: Props) {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   const navigate = useNavigate();
-  const { token } = useAuth();
+
+  const { token, loading } = useAuth();
 
   /* =========================
      LOAD NOTIFICATIONS
   ========================= */
 
-useEffect(() => {
-  if (!token || !isAuthenticated) return;
+  useEffect(() => {
 
-  let isMounted = true;
+    if (!token || !isAuthenticated || loading) return;
 
-  const loadNotifications = async () => {
-    try {
-      const data = await getNotifications(token);
+    let isMounted = true;
 
-      if (isMounted) {
-        setNotifications(data ?? []);
+    const loadNotifications = async () => {
+
+      try {
+
+        const data = await getNotifications(token);
+
+        if (isMounted) {
+          setNotifications(data ?? []);
+        }
+
+      } catch {
+
+        console.error("Could not load notifications");
+
       }
 
-    } catch (err) {
-      console.error("Could not load notifications");
-    }
-  };
+    };
 
-  loadNotifications();
+    loadNotifications();
 
-  const interval = setInterval(loadNotifications, 30000);
+    const interval = setInterval(loadNotifications, 30000);
 
-  return () => {
-    isMounted = false;
-    clearInterval(interval);
-  };
+    return () => {
 
-}, [token, isAuthenticated]);
+      isMounted = false;
+
+      clearInterval(interval);
+
+    };
+
+  }, [token, isAuthenticated, loading]);
 
   return (
 
@@ -174,5 +184,7 @@ useEffect(() => {
       </div>
 
     </nav>
+
   );
+
 }

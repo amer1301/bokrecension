@@ -31,19 +31,19 @@ type MyBook = {
 };
 
 export default function HomePage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, loading } = useAuth();
 
   const [query, setQuery] = useState("");
   const [books, setBooks] = useState<GoogleBook[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myBooks, setMyBooks] = useState<MyBook[]>([]);
 
-  const { data: myStatuses } = useQuery<ReadingStatus[]>({
-    queryKey: ["library"],
-    queryFn: () => getUserLibrary(token!),
-    enabled: isAuthenticated && !!token,
-  });
+const { data: myStatuses } = useQuery({
+  queryKey: ["library"],
+  queryFn: () => getUserLibrary(token!),
+  enabled: !loading && isAuthenticated && !!token,
+});
 
   useEffect(() => {
     if (!myStatuses || myStatuses.length === 0) {
@@ -55,7 +55,7 @@ export default function HomePage() {
       const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
       const booksWithDetails = await Promise.all(
-        myStatuses.map(async (status) => {
+        myStatuses.map(async (status: ReadingStatus) => {
           try {
             const response = await fetch(
               `https://www.googleapis.com/books/v1/volumes/${status.bookId}?key=${apiKey}`
@@ -89,7 +89,7 @@ export default function HomePage() {
   const searchBooks = async () => {
     if (!query.trim()) return;
 
-    setLoading(true);
+    setSearchLoading(true);
     setError(null);
 
     try {
@@ -112,7 +112,7 @@ export default function HomePage() {
     } catch {
       setError("Kunde inte hämta böcker.");
     } finally {
-      setLoading(false);
+      setSearchLoading(false);
     }
   };
 
@@ -189,7 +189,7 @@ export default function HomePage() {
   </button>
       </div>
 
-      {loading && <p className={styles.message}>Laddar...</p>}
+      {searchLoading && <p className={styles.message}>Laddar...</p>}
       {error && <p className={styles.error}>{error}</p>}
 
       <BookList books={books} />

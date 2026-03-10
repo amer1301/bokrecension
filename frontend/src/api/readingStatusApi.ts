@@ -4,6 +4,9 @@ export async function getReadingStatus(
   token: string,
   bookId: string
 ) {
+
+  if (!token) return null;
+
   const response = await fetch(
     `${API_URL}/reading-status/${bookId}`,
     {
@@ -18,6 +21,9 @@ export async function getReadingStatus(
 }
 
 export async function getUserLibrary(token: string) {
+
+  if (!token) return [];
+
   const response = await fetch(
     `${API_URL}/reading-status`,
     {
@@ -42,6 +48,11 @@ export async function updateReadingStatus(
     pagesRead: number;
   }
 ) {
+
+  if (!token) {
+  return null;
+}
+
   const response = await fetch(
     `${API_URL}/reading-status`,
     {

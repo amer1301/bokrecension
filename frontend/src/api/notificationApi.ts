@@ -5,15 +5,16 @@ const API_URL = import.meta.env.VITE_API_URL;
 ========================= */
 
 export async function getNotifications(token: string) {
+
+  if (!token) return [];
+
   const res = await fetch(`${API_URL}/notifications`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
-  if (!res.ok) {
-    throw new Error("Kunde inte hämta notifikationer");
-  }
+  if (!res.ok) return [];
 
   return res.json();
 }
