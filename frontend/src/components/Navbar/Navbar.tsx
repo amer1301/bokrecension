@@ -25,28 +25,31 @@ export default function Navbar({ isAuthenticated, logout }: Props) {
 useEffect(() => {
   if (!token || !isAuthenticated) return;
 
-  const loadNotifications = async () => {
+  let isMounted = true;
 
+  const loadNotifications = async () => {
     try {
       const data = await getNotifications(token);
 
-      setNotifications(data);
+      if (isMounted) {
+        setNotifications(data ?? []);
+      }
 
     } catch (err) {
-
       console.error("Could not load notifications");
-
     }
-
   };
 
   loadNotifications();
 
   const interval = setInterval(loadNotifications, 30000);
 
-  return () => clearInterval(interval);
+  return () => {
+    isMounted = false;
+    clearInterval(interval);
+  };
 
-}, [isAuthenticated]);
+}, [token, isAuthenticated]);
 
   return (
 

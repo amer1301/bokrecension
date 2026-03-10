@@ -28,23 +28,31 @@ export default function NotificationsPage() {
 
     if (!token) return;
 
+    let isMounted = true;
+
     const load = async () => {
 
       try {
 
         const data = await getNotifications(token);
 
-        setNotifications(data);
+        if (isMounted) {
+          setNotifications(data ?? []);
+        }
 
-      } catch {
+      } catch (error) {
 
-        console.error("Could not load notifications");
+        console.error("Could not load notifications", error);
 
       }
 
     };
 
     load();
+
+    return () => {
+      isMounted = false;
+    };
 
   }, [token]);
 
@@ -84,21 +92,22 @@ export default function NotificationsPage() {
 
         {notifications.map((n) => (
 
-<Link
-  key={n.id}
-  to={n.review?.bookId ? `/book/${n.review.bookId}` : "#"}
-  className={styles.card}
->
-  <p className={styles.message}>
-    {getMessage(n)}
-  </p>
+          <Link
+            key={n.id}
+            to={n.review?.bookId ? `/book/${n.review.bookId}` : "#"}
+            className={styles.card}
+          >
+            <p className={styles.message}>
+              {getMessage(n)}
+            </p>
 
-  {n.createdAt && (
-    <span className={styles.date}>
-      {new Date(n.createdAt).toLocaleDateString()}
-    </span>
-  )}
-</Link>
+            {n.createdAt && (
+              <span className={styles.date}>
+                {new Date(n.createdAt).toLocaleDateString()}
+              </span>
+            )}
+
+          </Link>
 
         ))}
 
