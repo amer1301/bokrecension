@@ -23,11 +23,21 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://bokrecension-frontend.onrender.com",
+  "https://bokrecension.onrender.com"
 ];
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS not allowed"));
+    },
     credentials: true,
   })
 );
