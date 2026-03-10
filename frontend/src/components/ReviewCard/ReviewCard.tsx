@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import styles from "./ReviewCard.module.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getComments,
   createComment,
@@ -21,6 +21,7 @@ type Comment = {
 
 type Review = {
   id: string;
+  bookId: string;
   text: string;
   rating: number;
   createdAt: string;
@@ -53,6 +54,7 @@ export default function ReviewCard({
 }: Props) {
 
   const { userId, token } = useAuth();
+  const navigate = useNavigate();
 
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(review.text);
@@ -91,7 +93,9 @@ export default function ReviewCard({
      CREATE COMMENT
   ========================= */
 
-  const handleComment = async () => {
+  const handleComment = async (e: React.MouseEvent) => {
+
+    e.stopPropagation();
 
     if (!commentText.trim()) {
       toast.error("Kommentaren kan inte vara tom");
@@ -126,7 +130,9 @@ export default function ReviewCard({
      DELETE COMMENT
   ========================= */
 
-  const handleDeleteComment = async (commentId: string) => {
+  const handleDeleteComment = async (commentId: string, e: React.MouseEvent) => {
+
+    e.stopPropagation();
 
     if (!token) return;
 
@@ -152,7 +158,9 @@ export default function ReviewCard({
      UPDATE REVIEW
   ========================= */
 
-  const handleSave = () => {
+  const handleSave = (e: React.MouseEvent) => {
+
+    e.stopPropagation();
 
     if (!text.trim()) {
       toast.error("Recensionen kan inte vara tom");
@@ -169,7 +177,11 @@ export default function ReviewCard({
 
   return (
 
-    <div className={styles.reviewCard}>
+    <div
+      className={styles.reviewCard}
+      onClick={() => navigate(`/book/${review.bookId}`)}
+      style={{ cursor: "pointer" }}
+    >
 
       {/* LIKE BUTTON */}
 
@@ -180,7 +192,9 @@ export default function ReviewCard({
             review.isLikedByUser ? styles.liked : ""
           }`}
           disabled={isLikeLoading}
-          onClick={() => {
+          onClick={(e) => {
+
+            e.stopPropagation();
 
             onToggleLike(review.id, review.isLikedByUser);
 
@@ -210,6 +224,7 @@ export default function ReviewCard({
           <Link
             to={`/user/${review.user?.id}`}
             className={styles.username}
+            onClick={(e) => e.stopPropagation()}
           >
             {review.user?.username ?? "Okänd användare"}
           </Link>
@@ -232,12 +247,14 @@ export default function ReviewCard({
             value={text}
             onChange={(e) => setText(e.target.value)}
             className={styles.textarea}
+            onClick={(e) => e.stopPropagation()}
           />
 
           <select
             value={rating}
             onChange={(e) => setRating(Number(e.target.value))}
             className={styles.select}
+            onClick={(e) => e.stopPropagation()}
           >
 
             {[1,2,3,4,5].map((n) => (
@@ -253,7 +270,10 @@ export default function ReviewCard({
             </button>
 
             <button
-              onClick={() => setEditing(false)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditing(false);
+              }}
               className="outlineButton"
             >
               Avbryt
@@ -280,14 +300,18 @@ export default function ReviewCard({
             <div className={styles.actions}>
 
               <button
-                onClick={() => setEditing(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditing(true);
+                }}
                 className={styles.editButton}
               >
                 Redigera
               </button>
 
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   onDelete(review.id);
                   toast.success("Recension borttagen");
                 }}
@@ -306,7 +330,10 @@ export default function ReviewCard({
 
       {/* COMMENTS */}
 
-      <div className={styles.commentsSection}>
+      <div
+        className={styles.commentsSection}
+        onClick={(e) => e.stopPropagation()}
+      >
 
         <div className={styles.commentHeader}>
           💬 Kommentarer ({comments.length})
@@ -326,7 +353,7 @@ export default function ReviewCard({
 
                   <button
                     className={styles.deleteComment}
-                    onClick={() => handleDeleteComment(c.id)}
+                    onClick={(e) => handleDeleteComment(c.id, e)}
                   >
                     Ta bort
                   </button>
