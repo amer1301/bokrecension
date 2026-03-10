@@ -26,11 +26,23 @@
   transition: 0.2s ease;
 }
 
+.statLabel {
+  color: #374151;
+}
+
 [data-theme="dark"] .statCard {
   background: #111;
   color: #fff;
 }
 
+[data-theme="dark"] .statLabel {
+  color: #d1d5db;
+}
+
+.statCard p {
+  color: #374151;
+  font-size: 0.9rem;
+}
 .statCard:hover {
   transform: translateY(-4px);
 }
@@ -39,11 +51,6 @@
   font-family: 'Playfair Display', serif;
   font-size: 2rem;
   margin-bottom: 0.5rem;
-}
-
-.statCard p {
-  color: #8f8f8f;
-  font-size: 0.9rem;
 }
 
 .centerMessage {

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import styles from "./Register.module.css";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { registerUser } from "../../api/authApi";
 
@@ -45,23 +44,34 @@ export default function RegisterPage() {
         <h1>Registrera</h1>
 
         <form onSubmit={handleRegister}>
+
           <div className={styles.inputGroup}>
+            <label htmlFor="email" className={styles.srOnly}>
+              Email
+            </label>
             <input
+              id="email"
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
 
           <div className={styles.inputGroup}>
+            <label htmlFor="password" className={styles.srOnly}>
+              Lösenord
+            </label>
             <input
+              id="password"
               type="password"
               placeholder="Lösenord"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="new-password"
             />
           </div>
 
@@ -72,13 +82,19 @@ export default function RegisterPage() {
           >
             {loading ? "Skapar konto..." : "Registrera"}
           </button>
+
         </form>
 
-        {error && <p className={styles.error}>{error}</p>}
+        {error && (
+          <p className={styles.error}>
+            {error}
+          </p>
+        )}
 
         <p className={styles.loginText}>
           Har du redan konto? <Link to="/login">Logga in</Link>
         </p>
+
       </div>
     </div>
   );

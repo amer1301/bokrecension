@@ -126,20 +126,20 @@ export default function ProfilePage() {
 
       {/* Stats */}
       <div className={styles.stats}>
-        <div className={styles.statCard}>
-          <h2>{stats.totalReviews}</h2>
-          <p>Recensioner</p>
-        </div>
+<div className={styles.statCard}>
+  <h2>{stats.totalReviews}</h2>
+  <p className={styles.statLabel}>Recensioner</p>
+</div>
 
-        <div className={styles.statCard}>
-          <h2>{stats.avgRating.toFixed(1)}</h2>
-          <p>Snittbetyg</p>
-        </div>
+<div className={styles.statCard}>
+  <h2>{stats.avgRating.toFixed(1)}</h2>
+  <p className={styles.statLabel}>Snittbetyg</p>
+</div>
 
-        <div className={styles.statCard}>
-          <h2>{stats.totalLikes}</h2>
-          <p>Totala likes</p>
-        </div>
+<div className={styles.statCard}>
+  <h2>{stats.totalLikes}</h2>
+  <p className={styles.statLabel}>Totala likes</p>
+</div>
       </div>
 
       {/* FOLLOW SECTION */}

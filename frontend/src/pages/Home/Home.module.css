@@ -113,6 +113,11 @@
   color: #d46a8c;
 }
 
+.srOnly {
+  position: absolute;
+  left: -10000px;
+}
+
 input:focus {
   outline: none;
   border: 2px solid var(--color-primary);

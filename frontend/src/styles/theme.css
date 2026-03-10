@@ -1,20 +1,20 @@
 :root {
   /* Backgrounds */
-  --color-bg: #fdf7f9;
+  --color-bg: #faf2f5;
   --color-surface: #ffffff;
   --color-surface-soft: #faf4f7;
 
   /* Brand */
-  --color-button: #d63384;
+  --color-button: #c2186a;
   --color-primary: #e8bfcf;
   --color-accent: #f3dbe4;
 
   /* Text */
   --color-text: #2b2b2b;
-  --color-muted: #8f8f8f;
+  --color-muted: #5f5f5f;
 
   /* Borders */
-  --color-border: #f0e6ea;
+  --color-border: rgba(0,0,0,0.08);
 
   /* Inputs */
   --color-input-bg: #ffffff;

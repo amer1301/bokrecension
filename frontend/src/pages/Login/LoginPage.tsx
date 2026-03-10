@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./Login.module.css";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { loginUser } from "../../api/authApi";
@@ -26,13 +25,10 @@ export default function LoginPage() {
     try {
       const data = await loginUser(email, password);
 
-      // Spara token
       login(data.token);
 
-      // Visa toast
       toast.success("Inloggad!");
 
-      // Navigera till startsidan
       navigate("/");
 
     } catch (err) {
@@ -55,23 +51,34 @@ export default function LoginPage() {
         <h1>Logga in</h1>
 
         <form onSubmit={handleLogin}>
+
           <div className={styles.inputGroup}>
+            <label htmlFor="email" className={styles.srOnly}>
+              Email
+            </label>
             <input
+              id="email"
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
 
           <div className={styles.inputGroup}>
+            <label htmlFor="password" className={styles.srOnly}>
+              Lösenord
+            </label>
             <input
+              id="password"
               type="password"
               placeholder="Lösenord"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
             />
           </div>
 
@@ -82,6 +89,7 @@ export default function LoginPage() {
           >
             {loading ? "Loggar in..." : "Logga in"}
           </button>
+
         </form>
 
         {error && (
@@ -96,6 +104,7 @@ export default function LoginPage() {
             Registrera dig här
           </Link>
         </p>
+
       </div>
     </div>
   );

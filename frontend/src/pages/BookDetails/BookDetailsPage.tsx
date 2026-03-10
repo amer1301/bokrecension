@@ -339,16 +339,19 @@ export default function BookDetailsPage() {
 
         <section className={styles.createReview}>
 
-          <h3>Skriv recension</h3>
+<h3>Skriv recension</h3>
 
-          <textarea
-            className={styles.textarea}
-            value={newReview}
-            onChange={(e) =>
-              setNewReview(e.target.value)
-            }
-            placeholder="Vad tyckte du om boken?"
-          />
+<label htmlFor="review-text" className={styles.srOnly}>
+  Skriv recension
+</label>
+
+<textarea
+  id="review-text"
+  className={styles.textarea}
+  value={newReview}
+  onChange={(e) => setNewReview(e.target.value)}
+  placeholder="Vad tyckte du om boken?"
+/>
 
           <div className={styles.reviewControls}>
 

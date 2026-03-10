@@ -174,14 +174,20 @@ const { data: myStatuses } = useQuery({
         </>
       )}
 
-      <div className={styles.searchWrapper}>
-        <input
-          type="text"
-          placeholder="Sök efter bok..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button
+<div className={styles.searchWrapper}>
+  <label htmlFor="book-search" className={styles.srOnly}>
+    Sök efter bok
+  </label>
+
+  <input
+    id="book-search"
+    type="text"
+    placeholder="Sök efter bok..."
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+  />
+
+  <button
     onClick={searchBooks}
     className="outlineButton"
   >

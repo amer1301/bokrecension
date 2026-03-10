@@ -187,31 +187,33 @@ export default function ReviewCard({
 
       {isAuthenticated && (
 
-        <button
-          className={`${styles.heartButton} ${
-            review.isLikedByUser ? styles.liked : ""
-          }`}
-          disabled={isLikeLoading}
-          onClick={(e) => {
+<button
+  aria-label={
+    review.isLikedByUser
+      ? "Ta bort gilla-markering"
+      : "Gilla recension"
+  }
+  className={`${styles.heartButton} ${
+    review.isLikedByUser ? styles.liked : ""
+  }`}
+  disabled={isLikeLoading}
+  onClick={(e) => {
 
-            e.stopPropagation();
+    e.stopPropagation();
 
-            onToggleLike(review.id, review.isLikedByUser);
+    onToggleLike(review.id, review.isLikedByUser);
 
-            if (review.isLikedByUser) {
-              toast("Like borttagen");
-            } else {
-              toast.success("Du gillade recensionen ❤️");
-            }
+    if (review.isLikedByUser) {
+      toast("Like borttagen");
+    } else {
+      toast.success("Du gillade recensionen ❤️");
+    }
 
-          }}
-        >
-
-          {review.isLikedByUser ? <FaHeart /> : <FaRegHeart />}
-
-          <span>{review.likesCount}</span>
-
-        </button>
+  }}
+>
+  {review.isLikedByUser ? <FaHeart /> : <FaRegHeart />}
+  <span>{review.likesCount}</span>
+</button>
 
       )}
 
@@ -239,51 +241,59 @@ export default function ReviewCard({
 
       {/* EDIT MODE */}
 
-      {editing ? (
+{editing ? (
+  <>
 
-        <>
+    <label htmlFor={`review-text-${review.id}`} className={styles.srOnly}>
+      Recensionstext
+    </label>
 
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className={styles.textarea}
-            onClick={(e) => e.stopPropagation()}
-          />
+    <textarea
+      id={`review-text-${review.id}`}
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      className={styles.textarea}
+      onClick={(e) => e.stopPropagation()}
+    />
 
-          <select
-            value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-            className={styles.select}
-            onClick={(e) => e.stopPropagation()}
-          >
+    <label htmlFor={`rating-${review.id}`} className={styles.srOnly}>
+      Betyg
+    </label>
 
-            {[1,2,3,4,5].map((n) => (
-              <option key={n} value={n}>{n}</option>
-            ))}
+    <select
+      id={`rating-${review.id}`}
+      value={rating}
+      onChange={(e) => setRating(Number(e.target.value))}
+      className={styles.select}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {[1,2,3,4,5].map((n) => (
+        <option key={n} value={n}>
+          {n}
+        </option>
+      ))}
+    </select>
 
-          </select>
+    <div className={styles.actions}>
 
-          <div className={styles.actions}>
+      <button onClick={handleSave} className="outlineButton">
+        Spara
+      </button>
 
-            <button onClick={handleSave} className="outlineButton">
-              Spara
-            </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setEditing(false);
+        }}
+        className="outlineButton"
+      >
+        Avbryt
+      </button>
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditing(false);
-              }}
-              className="outlineButton"
-            >
-              Avbryt
-            </button>
+    </div>
 
-          </div>
-
-        </>
-
-      ) : (
+  </>
+) : (
 
         <>
 
@@ -374,18 +384,23 @@ export default function ReviewCard({
 
           <div className={styles.commentForm}>
 
-            <input
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Skriv en kommentar..."
-            />
+<label htmlFor={`comment-${review.id}`} className={styles.srOnly}>
+  Skriv en kommentar
+</label>
 
-            <button
-              onClick={handleComment}
-              className="outlineButton"
-            >
-              Skicka
-            </button>
+<input
+  id={`comment-${review.id}`}
+  value={commentText}
+  onChange={(e) => setCommentText(e.target.value)}
+  placeholder="Skriv en kommentar..."
+/>
+
+<button
+  onClick={handleComment}
+  className="outlineButton"
+>
+  Skicka
+</button>
 
           </div>
 

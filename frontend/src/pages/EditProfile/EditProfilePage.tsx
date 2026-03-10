@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { getUser, updateUser } from "../../api/userApi";
+import styles from "./EditProfilePage.module.css";
 
 export default function EditProfilePage() {
   const { token } = useAuth();
@@ -34,26 +35,43 @@ export default function EditProfilePage() {
   if (!data) return null;
 
   return (
-    <div className="container">
-      <h1>Redigera profil</h1>
+<div className="container">
+  <h1>Redigera profil</h1>
 
-      <input
-        type="text"
-        placeholder="Användarnamn"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      handleSave();
+    }}
+  >
 
-      <input
-        type="text"
-        placeholder="Profilbild URL"
-        value={avatarUrl}
-        onChange={(e) => setAvatarUrl(e.target.value)}
-      />
+    <label htmlFor="username" className={styles.srOnly}>
+      Användarnamn
+    </label>
+    <input
+      id="username"
+      type="text"
+      placeholder="Användarnamn"
+      value={username}
+      onChange={(e) => setUsername(e.target.value)}
+    />
 
-      <button className="outlineButton" onClick={handleSave}>
-        Spara
-      </button>
-    </div>
+    <label htmlFor="avatarUrl" className={styles.srOnly}>
+      Profilbild URL
+    </label>
+    <input
+      id="avatarUrl"
+      type="text"
+      placeholder="Profilbild URL"
+      value={avatarUrl}
+      onChange={(e) => setAvatarUrl(e.target.value)}
+    />
+
+    <button type="submit" className="outlineButton">
+      Spara
+    </button>
+
+  </form>
+</div>
   );
 }

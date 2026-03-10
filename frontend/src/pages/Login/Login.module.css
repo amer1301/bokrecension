@@ -57,6 +57,11 @@
   text-decoration: underline;
 }
 
+.srOnly {
+  position: absolute;
+  left: -10000px;
+}
+
 @media (max-width: 768px) {
 
   .form {

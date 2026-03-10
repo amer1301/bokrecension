@@ -88,6 +88,11 @@
   opacity: 0.8;
 }
 
+.srOnly {
+  position: absolute;
+  left: -10000px;
+}
+
 @media (max-width: 768px) {
 
   .form {
