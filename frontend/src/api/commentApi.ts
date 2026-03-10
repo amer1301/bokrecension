@@ -40,3 +40,28 @@ export async function createComment(
 
   return data;
 }
+
+/* =========================
+   DELETE COMMENT
+========================= */
+
+export async function deleteComment(
+  token: string,
+  commentId: string
+) {
+
+  const res = await fetch(
+    `${API_URL}/comments/${commentId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Kunde inte ta bort kommentar");
+  }
+
+}

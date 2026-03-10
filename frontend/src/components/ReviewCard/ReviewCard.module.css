@@ -173,6 +173,19 @@ margin-bottom: 1em;
   gap: 8px;
 }
 
+.deleteComment {
+  padding-left: 1em;
+  background: none;
+  border: none;
+  color: var(--color-button);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.deleteComment:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 480px) {
 
   .reviewCard {

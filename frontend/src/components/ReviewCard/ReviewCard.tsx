@@ -3,7 +3,12 @@ import styles from "./ReviewCard.module.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import { getComments, createComment } from "../../api/commentApi";
+import {
+  getComments,
+  createComment,
+  deleteComment
+} from "../../api/commentApi";
+import { useAuth } from "../../context/AuthContext";
 
 type Comment = {
   id: string;
@@ -47,6 +52,8 @@ export default function ReviewCard({
   onToggleLike,
 }: Props) {
 
+  const { userId, token } = useAuth();
+
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(review.text);
   const [rating, setRating] = useState(review.rating);
@@ -61,12 +68,19 @@ export default function ReviewCard({
   useEffect(() => {
 
     const loadComments = async () => {
+
       try {
+
         const data = await getComments(review.id);
+
         setComments(data);
+
       } catch {
+
         toast.error("Kunde inte hämta kommentarer");
+
       }
+
     };
 
     loadComments();
@@ -86,7 +100,7 @@ export default function ReviewCard({
 
     try {
 
-      const token = localStorage.getItem("token") || "";
+      if (!token) return;
 
       const newComment = await createComment(
         token,
@@ -101,7 +115,35 @@ export default function ReviewCard({
       toast.success("Kommentar tillagd 💬");
 
     } catch {
+
       toast.error("Kunde inte skapa kommentar");
+
+    }
+
+  };
+
+  /* =========================
+     DELETE COMMENT
+  ========================= */
+
+  const handleDeleteComment = async (commentId: string) => {
+
+    if (!token) return;
+
+    try {
+
+      await deleteComment(token, commentId);
+
+      setComments((prev) =>
+        prev.filter((c) => c.id !== commentId)
+      );
+
+      toast.success("Kommentar borttagen");
+
+    } catch {
+
+      toast.error("Kunde inte ta bort kommentar");
+
     }
 
   };
@@ -122,6 +164,7 @@ export default function ReviewCard({
     toast.success("Recension uppdaterad ✏️");
 
     setEditing(false);
+
   };
 
   return (
@@ -275,7 +318,22 @@ export default function ReviewCard({
 
             <div key={c.id} className={styles.comment}>
 
-              <strong>{c.user.username}</strong>
+              <div className={styles.commentTop}>
+
+                <strong>{c.user.username}</strong>
+
+                {c.user.id === userId && (
+
+                  <button
+                    className={styles.deleteComment}
+                    onClick={() => handleDeleteComment(c.id)}
+                  >
+                    Ta bort
+                  </button>
+
+                )}
+
+              </div>
 
               <p>{c.text}</p>
 
@@ -295,7 +353,10 @@ export default function ReviewCard({
               placeholder="Skriv en kommentar..."
             />
 
-            <button onClick={handleComment} className="outlineButton">
+            <button
+              onClick={handleComment}
+              className="outlineButton"
+            >
               Skicka
             </button>
 

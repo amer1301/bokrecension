@@ -95,4 +95,36 @@ router.get("/:reviewId", async (req, res, next) => {
   }
 });
 
+/* =========================
+DELETE COMMENT
+========================= */
+router.delete("/:id", authenticate, async (req, res, next) => {
+  try {
+
+    const commentId = req.params.id as string;
+    const userId = (req as any).userId as string;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId }
+    });
+
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    if (comment.userId !== userId) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    await prisma.comment.delete({
+      where: { id: commentId }
+    });
+
+    res.json({ message: "Comment deleted" });
+
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 export default router;
