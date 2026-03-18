@@ -135,3 +135,7 @@ nvm use
 
 ## Publicering
 https://bokrecension-frontend.onrender.com/
+
+## Demo-användare för testning
+email: test@test.se
+password: 123456
