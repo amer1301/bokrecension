@@ -117,6 +117,14 @@ background: transparent;
   position: absolute;
   left: -10000px;
 }
+
+.description {
+  max-width: 600px;
+  margin: 1rem auto;
+  line-height: 1.6;
+  color: #555;
+}
+
 @media (max-width: 768px) {
 
   .bookLayout {

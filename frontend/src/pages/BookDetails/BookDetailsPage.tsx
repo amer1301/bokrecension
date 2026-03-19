@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,7 +31,6 @@ import {
 } from "../../api/readingStatusApi";
 
 export default function BookDetailsPage() {
-
   const { id } = useParams<{ id: string }>();
   const { token, isAuthenticated, userId } = useAuth();
   const queryClient = useQueryClient();
@@ -40,6 +39,33 @@ export default function BookDetailsPage() {
   const [rating, setRating] = useState(5);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
+  const [description, setDescription] = useState<string>("");
+
+  /* ================= FETCH GOOGLE BOOK DESCRIPTION ================= */
+
+  useEffect(() => {
+    async function fetchBookDescription() {
+      try {
+        const res = await fetch(
+          `https://www.googleapis.com/books/v1/volumes/${id}`
+        );
+        const data = await res.json();
+
+        const desc =
+          data?.volumeInfo?.description ||
+          "Ingen beskrivning tillgänglig.";
+
+        setDescription(desc);
+      } catch (err) {
+        console.error("Kunde inte hämta bokbeskrivning", err);
+        setDescription("Kunde inte ladda beskrivning.");
+      }
+    }
+
+    if (id) {
+      fetchBookDescription();
+    }
+  }, [id]);
 
   /* ================= BOOK QUERY ================= */
 
@@ -124,69 +150,16 @@ export default function BookDetailsPage() {
         ? unlikeReview(token!, reviewId)
         : likeReview(token!, reviewId),
 
-    onMutate: async ({ reviewId, isLiked }) => {
-
-      await queryClient.cancelQueries({
-        queryKey: ["reviews", id, page, sort],
-      });
-
-      const previousData =
-        queryClient.getQueryData<PaginatedReviews>([
-          "reviews",
-          id,
-          page,
-          sort,
-        ]);
-
-      if (!previousData) return;
-
-      queryClient.setQueryData<PaginatedReviews>(
-        ["reviews", id, page, sort],
-        {
-          ...previousData,
-          reviews: previousData.reviews.map((review) =>
-            review.id === reviewId
-              ? {
-                  ...review,
-                  isLikedByUser: !isLiked,
-                  likesCount: isLiked
-                    ? review.likesCount - 1
-                    : review.likesCount + 1,
-                }
-              : review
-          ),
-        }
-      );
-
-      return { previousData };
-    },
-
-    onError: (_err, _vars, context) => {
-
-      if (context?.previousData) {
-
-        queryClient.setQueryData(
-          ["reviews", id, page, sort],
-          context.previousData
-        );
-
-      }
-
-    },
-
     onSettled: () => {
-
       queryClient.invalidateQueries({
         queryKey: ["reviews", id],
       });
-
     },
   });
 
   /* ================= CREATE REVIEW HANDLER ================= */
 
   const handleCreateReview = () => {
-
     if (!newReview.trim()) return;
 
     createReviewMutation.mutate({
@@ -212,23 +185,23 @@ export default function BookDetailsPage() {
   /* ================= UI ================= */
 
   return (
-
     <div className={styles.appContainer}>
-
       {/* BOOK HEADER */}
-
       <header className={styles.bookHeader}>
         <h1 className={styles.title}>
           {book.volumeInfo.title}
         </h1>
 
+        <p
+          className={styles.description}
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
+
         <hr className={styles.divider} />
       </header>
 
       {/* READING STATUS */}
-
       {isAuthenticated && token && (
-
         <ReadingStatusSection
           bookId={id!}
           token={token}
@@ -236,47 +209,34 @@ export default function BookDetailsPage() {
           getReadingStatus={getReadingStatus}
           updateReadingStatus={updateReadingStatus}
         />
-
       )}
 
       {/* REVIEWS */}
-
       <section className={styles.section}>
-
         <div className={styles.reviewsHeader}>
-
           <h2>Recensioner</h2>
 
           <div className={styles.sortWrapper}>
-
             <label htmlFor="sort">Sortera:</label>
 
             <select
               id="sort"
               value={sort}
               onChange={(e) => {
-
                 setSort(e.target.value as "asc" | "desc");
                 setPage(1);
-
               }}
             >
-
               <option value="desc">Nyast först</option>
               <option value="asc">Äldst först</option>
-
             </select>
-
           </div>
-
         </div>
 
         <RatingSummary reviews={reviews} />
 
         <div className={styles.reviewList}>
-
           {reviews.map((review) => (
-
             <ReviewCard
               key={review.id}
               review={review}
@@ -300,15 +260,12 @@ export default function BookDetailsPage() {
                 })
               }
             />
-
           ))}
-
         </div>
 
+        {/* PAGINATION */}
         {totalPages > 1 && (
-
           <div className={styles.pagination}>
-
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
@@ -326,35 +283,22 @@ export default function BookDetailsPage() {
             >
               Nästa
             </button>
-
           </div>
-
         )}
-
       </section>
 
-      {/* CREATE REVIEW */}
-
       {isAuthenticated && (
-
         <section className={styles.createReview}>
+          <h3>Skriv recension</h3>
 
-<h3>Skriv recension</h3>
-
-<label htmlFor="review-text" className={styles.srOnly}>
-  Skriv recension
-</label>
-
-<textarea
-  id="review-text"
-  className={styles.textarea}
-  value={newReview}
-  onChange={(e) => setNewReview(e.target.value)}
-  placeholder="Vad tyckte du om boken?"
-/>
+          <textarea
+            className={styles.textarea}
+            value={newReview}
+            onChange={(e) => setNewReview(e.target.value)}
+            placeholder="Vad tyckte du om boken?"
+          />
 
           <div className={styles.reviewControls}>
-
             <select
               value={rating}
               onChange={(e) =>
@@ -374,14 +318,9 @@ export default function BookDetailsPage() {
             >
               Skicka recension
             </button>
-
           </div>
-
         </section>
-
       )}
-
     </div>
-
   );
 }
