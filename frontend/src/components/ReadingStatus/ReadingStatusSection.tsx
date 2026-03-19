@@ -93,12 +93,12 @@ const handleSave = async () => {
       }
     >
       <option value="">Välj status</option>
-      <option value="want_to_read">Vill läsa</option>
-      <option value="reading">Läser</option>
-      <option value="finished">Klar</option>
+      <option value="PLANNED">Vill läsa</option>
+<option value="READING">Läser</option>
+<option value="COMPLETED">Klar</option>
     </select>
 
-    {status === "reading" && pageCount && (
+    {status === "READING" && pageCount && (
       <div className={styles.pagesSection}>
         <label className={styles.label}>
           Antal sidor jag läst ({pagesRead} / {pageCount})
