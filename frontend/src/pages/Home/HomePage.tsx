@@ -116,18 +116,20 @@ const { data: myStatuses } = useQuery({
     }
   };
 
-  const translateStatus = (status: string) => {
-    switch (status) {
-      case "want_to_read":
-        return "Vill läsa";
-      case "reading":
-        return "Läser";
-      case "finished":
-        return "Klar";
-      default:
-        return status;
-    }
-  };
+const translateStatus = (status: string) => {
+  switch (status) {
+    case "PLANNED":
+      return "Vill läsa";
+    case "READING":
+      return "Läser";
+    case "COMPLETED":
+      return "Klar";
+    case "DROPPED":
+      return "Avbruten";
+    default:
+      return status;
+  }
+};
 
   return (
     <>
